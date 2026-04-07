@@ -44,11 +44,12 @@ export class TransactionService {
       productId: item.product.id,
       productName: item.product.name,
       quantity: item.quantity,
-      price: item.product.price
+      price: item.product.sellingPrice,
+      costPrice: item.product.costPrice
     }));
 
     const subtotal = cartItems.reduce(
-      (sum, item) => sum + item.product.price * item.quantity,
+      (sum, item) => sum + item.product.sellingPrice * item.quantity,
       0
     );
 

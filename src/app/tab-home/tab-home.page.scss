@@ -1,5 +1,29 @@
 ﻿// ═══ Home Dashboard ═══
 
+.theme-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--pos-border);
+  background: var(--pos-bg-card);
+  color: var(--pos-amber);
+  font-size: 18px;
+  cursor: pointer;
+  margin-right: 8px;
+  transition: all 0.3s ease;
+
+  &:active {
+    transform: scale(0.9);
+  }
+
+  ion-icon {
+    font-size: 18px;
+  }
+}
+
 .counter-strip {
   display: flex;
   align-items: center;

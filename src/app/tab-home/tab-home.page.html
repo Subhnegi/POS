@@ -2,6 +2,9 @@
   <ion-toolbar>
     <ion-title>Dashboard</ion-title>
     <ion-buttons slot="end">
+      <button class="theme-toggle-btn" (click)="toggleTheme()">
+        <ion-icon [name]="themeService.isDark ? 'sunny-outline' : 'moon-outline'"></ion-icon>
+      </button>
       <div class="status-pill" [class.online]="isOnline" [class.offline]="!isOnline">
         <span class="status-dot"></span>
         <span class="status-text">{{ isOnline ? 'Online' : 'Offline' }}</span>

@@ -99,3 +99,62 @@
     --ion-text-color: var(--pos-text-primary);
   }
 }
+
+// ═══════════════════════════════════════════════════════
+// Light Theme Override — "Daylight Terminal"
+// ═══════════════════════════════════════════════════════
+
+body.light-theme {
+  --pos-bg-deep: #f0f2f5;
+  --pos-bg-base: #f8f9fb;
+  --pos-bg-raised: #ffffff;
+  --pos-bg-card: #ffffff;
+  --pos-bg-hover: #eef1f6;
+  --pos-bg-input: #eef1f6;
+
+  --pos-border: #d8dee6;
+  --pos-border-light: #e5e8ed;
+
+  --pos-text-primary: #1a2030;
+  --pos-text-secondary: #5a6577;
+  --pos-text-muted: #8e99a8;
+
+  --pos-amber: #d97706;
+  --pos-amber-glow: rgba(217, 119, 6, 0.12);
+  --pos-amber-soft: #f59e0b;
+
+  --pos-emerald: #059669;
+  --pos-emerald-glow: rgba(5, 150, 105, 0.12);
+
+  --pos-rose: #e11d48;
+  --pos-rose-glow: rgba(225, 29, 72, 0.12);
+
+  --pos-sky: #0284c7;
+  --pos-sky-glow: rgba(2, 132, 199, 0.12);
+
+  --pos-violet: #7c3aed;
+  --pos-violet-glow: rgba(124, 58, 237, 0.12);
+
+  --shadow-card: 0 1px 4px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-elevated: 0 8px 30px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.04);
+  --shadow-glow-amber: 0 0 16px rgba(217, 119, 6, 0.15);
+  --shadow-glow-emerald: 0 0 16px rgba(5, 150, 105, 0.15);
+
+  --ion-background-color: var(--pos-bg-base);
+  --ion-background-color-rgb: 248, 249, 251;
+  --ion-text-color: var(--pos-text-primary);
+  --ion-text-color-rgb: 26, 32, 48;
+
+  --ion-card-background: var(--pos-bg-card);
+  --ion-border-color: var(--pos-border);
+  --ion-toolbar-background: var(--pos-bg-deep);
+  --ion-toolbar-color: var(--pos-text-primary);
+  --ion-tab-bar-background: var(--pos-bg-deep);
+  --ion-tab-bar-color: var(--pos-text-muted);
+  --ion-tab-bar-color-selected: var(--pos-amber);
+
+  --ion-color-primary: var(--pos-amber);
+  --ion-color-primary-rgb: 217, 119, 6;
+  --ion-color-light: var(--pos-bg-raised);
+  --ion-color-light-rgb: 255, 255, 255;
+}

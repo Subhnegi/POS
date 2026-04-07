@@ -253,7 +253,8 @@ export class TabPosPage implements OnInit, OnDestroy {
             productId: item.product.id,
             productName: item.product.name,
             quantity: item.quantity,
-            price: item.product.price
+            price: item.product.sellingPrice,
+            costPrice: item.product.costPrice
           })),
           subtotal: this.checkoutSubtotal,
           discountPercent: this.checkoutData.discountPercent,

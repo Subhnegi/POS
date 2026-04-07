@@ -21,7 +21,7 @@ export class TabInventoryPage implements OnInit, OnDestroy {
   showForm = false;
   isEditing = false;
   editingProductId = '';
-  formProduct = { name: '', price: 0, stock: 0, imageUrl: '' };
+  formProduct = { name: '', costPrice: 0, sellingPrice: 0, stock: 0, imageUrl: '' };
   isDraggingImage = false;
 
   constructor(
@@ -51,7 +51,7 @@ export class TabInventoryPage implements OnInit, OnDestroy {
   }
 
   openAddForm(): void {
-    this.formProduct = { name: '', price: 0, stock: 0, imageUrl: '' };
+    this.formProduct = { name: '', costPrice: 0, sellingPrice: 0, stock: 0, imageUrl: '' };
     this.isEditing = false;
     this.editingProductId = '';
     this.showForm = true;
@@ -60,7 +60,8 @@ export class TabInventoryPage implements OnInit, OnDestroy {
   openEditForm(product: Product): void {
     this.formProduct = {
       name: product.name,
-      price: product.price,
+      costPrice: product.costPrice,
+      sellingPrice: product.sellingPrice,
       stock: product.stock,
       imageUrl: product.imageUrl || ''
     };
@@ -71,7 +72,7 @@ export class TabInventoryPage implements OnInit, OnDestroy {
 
   cancelForm(): void {
     this.showForm = false;
-    this.formProduct = { name: '', price: 0, stock: 0, imageUrl: '' };
+    this.formProduct = { name: '', costPrice: 0, sellingPrice: 0, stock: 0, imageUrl: '' };
   }
 
   onDragOver(event: DragEvent): void {
@@ -122,8 +123,12 @@ export class TabInventoryPage implements OnInit, OnDestroy {
       await this.showToast('Please enter a product name', 'warning');
       return;
     }
-    if (this.formProduct.price <= 0) {
-      await this.showToast('Price must be greater than 0', 'warning');
+    if (this.formProduct.costPrice < 0) {
+      await this.showToast('Cost price cannot be negative', 'warning');
+      return;
+    }
+    if (this.formProduct.sellingPrice <= 0) {
+      await this.showToast('Selling price must be greater than 0', 'warning');
       return;
     }
     if (this.formProduct.stock < 0) {

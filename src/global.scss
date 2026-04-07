@@ -317,3 +317,22 @@ ion-input, ion-textarea {
     background: var(--pos-text-muted);
   }
 }
+
+// ═══════════════════════════════════════
+//  LIGHT THEME OVERRIDES
+// ═══════════════════════════════════════
+
+body.light-theme {
+  .glass-card {
+    background: rgba(255, 255, 255, 0.85);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+  }
+
+  ion-tab-bar {
+    border-top-color: var(--pos-border-light);
+  }
+
+  .img-placeholder {
+    color: rgba(255, 255, 255, 0.85);
+  }
+}

@@ -53,7 +53,7 @@
             </div>
             <div class="prod-body">
               <span class="prod-name">{{ product.name }}</span>
-              <span class="prod-price">₹{{ product.price | number:'1.2-2' }}</span>
+              <span class="prod-price">₹{{ product.sellingPrice | number:'1.2-2' }}</span>
             </div>
             <div class="prod-stock-pill"
                  [class.warning]="product.stock > 0 && product.stock <= 5"
@@ -106,7 +106,7 @@
           </div>
           <div class="cart-row-info">
             <span class="cart-row-name">{{ item.product.name }}</span>
-            <span class="cart-row-unit">₹{{ item.product.price | number:'1.2-2' }}</span>
+            <span class="cart-row-unit">₹{{ item.product.sellingPrice | number:'1.2-2' }}</span>
           </div>
           <div class="qty-ctrl">
             <button class="qty-btn" (click)="decrementQty(item.product.id)">
@@ -117,7 +117,7 @@
               <ion-icon name="add"></ion-icon>
             </button>
           </div>
-          <span class="cart-row-total">₹{{ (item.product.price * item.quantity) | number:'1.2-2' }}</span>
+          <span class="cart-row-total">₹{{ (item.product.sellingPrice * item.quantity) | number:'1.2-2' }}</span>
           <button class="cart-remove-btn" (click)="removeFromCart(item.product.id)">
             <ion-icon name="close"></ion-icon>
           </button>
@@ -164,7 +164,7 @@
           <div class="section-label">Order Summary</div>
           <div *ngFor="let item of cartItems" class="order-row">
             <span class="order-item-name">{{ item.product.name }} × {{ item.quantity }}</span>
-            <span class="order-item-amt">₹{{ (item.product.price * item.quantity) | number:'1.2-2' }}</span>
+            <span class="order-item-amt">₹{{ (item.product.sellingPrice * item.quantity) | number:'1.2-2' }}</span>
           </div>
           <div class="order-subtotal-row">
             <span>Subtotal</span>

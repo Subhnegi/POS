@@ -6,6 +6,7 @@ import { CounterService } from '../services/counter.service';
 import { NetworkService } from '../services/network.service';
 import { SyncService } from '../services/sync.service';
 import { OfflineStorageService } from '../services/offline-storage.service';
+import { ThemeService } from '../services/theme.service';
 import { Product } from '../models/product.model';
 import { Transaction } from '../models/transaction.model';
 
@@ -37,8 +38,13 @@ export class TabHomePage implements OnInit, OnDestroy {
     private counterService: CounterService,
     private networkService: NetworkService,
     private syncService: SyncService,
-    private offlineStorage: OfflineStorageService
+    private offlineStorage: OfflineStorageService,
+    public themeService: ThemeService
   ) {}
+
+  toggleTheme(): void {
+    this.themeService.toggle();
+  }
 
   ngOnInit(): void {
     this.counterLabel = this.counterService.getCounterLabel();

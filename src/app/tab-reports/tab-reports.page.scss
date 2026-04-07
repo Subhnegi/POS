@@ -1,0 +1,322 @@
+// ═══════════════════════════════════════════════════════
+// Reports Tab — Midnight Terminal Theme  
+// ═══════════════════════════════════════════════════════
+
+:host {
+  --report-pad: 16px;
+}
+
+ion-header ion-toolbar {
+  --background: var(--pos-bg-base);
+  --color: var(--pos-text-primary);
+
+  ion-title {
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+}
+
+ion-content {
+  --background: var(--pos-bg-deep);
+}
+
+// ═══ Report Type Tabs ═══
+.report-tabs {
+  display: flex;
+  gap: 6px;
+  padding: var(--report-pad) var(--report-pad) 8px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+
+  &::-webkit-scrollbar { display: none; }
+}
+
+.rtab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 18px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--pos-border);
+  background: var(--pos-bg-card);
+  color: var(--pos-text-secondary);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  ion-icon { font-size: 16px; }
+
+  &:hover {
+    background: var(--pos-bg-hover);
+    color: var(--pos-text-primary);
+  }
+
+  &.active {
+    background: var(--pos-amber);
+    color: #0f1419;
+    border-color: var(--pos-amber);
+    font-weight: 600;
+
+    ion-icon { color: #0f1419; }
+  }
+}
+
+// ═══ Period Selector ═══
+.period-selector {
+  display: flex;
+  gap: 4px;
+  padding: 0 var(--report-pad) 12px;
+}
+
+.period-btn {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--pos-border);
+  background: var(--pos-bg-raised);
+  color: var(--pos-text-muted);
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    color: var(--pos-text-secondary);
+    background: var(--pos-bg-hover);
+  }
+
+  &.active {
+    background: var(--pos-amber-glow);
+    color: var(--pos-amber);
+    border-color: rgba(245, 158, 11, 0.3);
+    font-weight: 600;
+  }
+}
+
+// ═══ Report Content ═══
+.report-content {
+  padding: 0 var(--report-pad) var(--report-pad);
+  animation: fadeSlideUp 0.3s ease;
+}
+
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+// ═══ KPI Cards ═══
+.kpi-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.kpi-card {
+  flex: 1;
+  min-width: 120px;
+  padding: 16px;
+  border-radius: var(--radius-md);
+  background: var(--pos-bg-card);
+  border: 1px solid var(--pos-border);
+
+  &.full-width {
+    flex: 1 1 100%;
+  }
+
+  .kpi-label {
+    font-family: var(--font-body);
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--pos-text-muted);
+    margin-bottom: 6px;
+  }
+
+  .kpi-value {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  &.amber {
+    border-color: rgba(245, 158, 11, 0.25);
+    background: linear-gradient(135deg, var(--pos-bg-card), rgba(245, 158, 11, 0.06));
+    .kpi-value { color: var(--pos-amber); }
+  }
+
+  &.emerald {
+    border-color: rgba(16, 185, 129, 0.25);
+    background: linear-gradient(135deg, var(--pos-bg-card), rgba(16, 185, 129, 0.06));
+    .kpi-value { color: var(--pos-emerald); }
+  }
+
+  &.rose {
+    border-color: rgba(244, 63, 94, 0.25);
+    background: linear-gradient(135deg, var(--pos-bg-card), rgba(244, 63, 94, 0.06));
+    .kpi-value { color: var(--pos-rose); }
+  }
+
+  &.sky {
+    border-color: rgba(56, 189, 248, 0.25);
+    background: linear-gradient(135deg, var(--pos-bg-card), rgba(56, 189, 248, 0.06));
+    .kpi-value { color: var(--pos-sky); }
+  }
+
+  &.violet {
+    border-color: rgba(167, 139, 250, 0.25);
+    background: linear-gradient(135deg, var(--pos-bg-card), rgba(167, 139, 250, 0.06));
+    .kpi-value { color: var(--pos-violet); }
+  }
+}
+
+// ═══ Chart Cards ═══
+.chart-card {
+  background: var(--pos-bg-card);
+  border: 1px solid var(--pos-border);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  margin-bottom: 16px;
+
+  h3 {
+    font-family: var(--font-display);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--pos-text-primary);
+    margin: 0 0 16px;
+    letter-spacing: -0.01em;
+  }
+}
+
+.chart-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+
+  .chart-card { margin-bottom: 0; }
+
+  .flex-1 { flex: 1; min-width: 0; }
+  .flex-2 { flex: 2; min-width: 0; }
+}
+
+.chart-wrap {
+  position: relative;
+  height: 260px;
+
+  canvas { max-height: 100%; }
+}
+
+.chart-wrap-lg {
+  height: 320px;
+}
+
+.doughnut-wrap {
+  height: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+// ═══ Breakdown List ═══
+.breakdown-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.breakdown-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--pos-bg-raised);
+  border: 1px solid var(--pos-border-light);
+
+  .bk-method {
+    flex: 1;
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--pos-text-primary);
+    text-transform: capitalize;
+  }
+
+  .bk-count {
+    font-size: 11px;
+    color: var(--pos-text-muted);
+    font-family: var(--font-body);
+  }
+
+  .bk-total {
+    font-family: var(--font-display);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--pos-amber);
+  }
+}
+
+// ═══ Empty State ═══
+.empty-report {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px;
+  text-align: center;
+
+  ion-icon {
+    font-size: 56px;
+    color: var(--pos-text-muted);
+    margin-bottom: 16px;
+  }
+
+  p {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--pos-text-secondary);
+    margin: 0 0 4px;
+  }
+
+  small {
+    font-family: var(--font-body);
+    font-size: 13px;
+    color: var(--pos-text-muted);
+  }
+}
+
+// ═══ Responsive ═══
+@media (max-width: 600px) {
+  .kpi-row {
+    flex-wrap: wrap;
+  }
+
+  .kpi-card {
+    min-width: calc(50% - 8px);
+  }
+
+  .chart-row {
+    flex-direction: column;
+  }
+
+  .chart-wrap {
+    height: 220px;
+  }
+
+  .report-tabs {
+    padding: 12px 12px 6px;
+  }
+
+  .rtab {
+    padding: 8px 14px;
+    font-size: 12px;
+  }
+}

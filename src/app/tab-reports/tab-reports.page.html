@@ -1,0 +1,182 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Reports</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <!-- Report Type Tabs -->
+  <div class="report-tabs">
+    <button class="rtab" [class.active]="activeTab === 'sales'" (click)="setTab('sales')">
+      <ion-icon name="trending-up-outline"></ion-icon>
+      <span>Sales</span>
+    </button>
+    <button class="rtab" [class.active]="activeTab === 'stock'" (click)="setTab('stock')">
+      <ion-icon name="cube-outline"></ion-icon>
+      <span>Stock</span>
+    </button>
+    <button class="rtab" [class.active]="activeTab === 'transactions'" (click)="setTab('transactions')">
+      <ion-icon name="receipt-outline"></ion-icon>
+      <span>Transactions</span>
+    </button>
+    <button class="rtab" [class.active]="activeTab === 'profit'" (click)="setTab('profit')">
+      <ion-icon name="cash-outline"></ion-icon>
+      <span>Profit/Loss</span>
+    </button>
+  </div>
+
+  <!-- Period Selector (not for stock) -->
+  <div class="period-selector" *ngIf="activeTab !== 'stock'">
+    <button *ngFor="let p of ['day', 'week', 'month', 'year']"
+            class="period-btn"
+            [class.active]="activePeriod === p"
+            (click)="setPeriod($any(p))">
+      {{ p | titlecase }}
+    </button>
+  </div>
+
+  <!-- ═══ SALES REPORT ═══ -->
+  <div *ngIf="activeTab === 'sales'" class="report-content">
+    <div class="kpi-row">
+      <div class="kpi-card amber">
+        <div class="kpi-label">Total Revenue</div>
+        <div class="kpi-value">₹{{ totalSalesAmount | number:'1.2-2' }}</div>
+      </div>
+      <div class="kpi-card sky">
+        <div class="kpi-label">Orders</div>
+        <div class="kpi-value">{{ totalOrders }}</div>
+      </div>
+      <div class="kpi-card emerald">
+        <div class="kpi-label">Avg Order Value</div>
+        <div class="kpi-value">₹{{ avgOrderValue | number:'1.2-2' }}</div>
+      </div>
+    </div>
+    <div class="chart-card">
+      <h3>Revenue Over Time</h3>
+      <div class="chart-wrap">
+        <canvas #salesChart></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ STOCK REPORT ═══ -->
+  <div *ngIf="activeTab === 'stock'" class="report-content">
+    <div class="kpi-row">
+      <div class="kpi-card emerald">
+        <div class="kpi-label">Total Units</div>
+        <div class="kpi-value">{{ totalStockUnits }}</div>
+      </div>
+      <div class="kpi-card amber">
+        <div class="kpi-label">Stock Value</div>
+        <div class="kpi-value">₹{{ totalStockValue | number:'1.2-2' }}</div>
+      </div>
+      <div class="kpi-card rose" *ngIf="lowStockCount > 0">
+        <div class="kpi-label">Low Stock</div>
+        <div class="kpi-value">{{ lowStockCount }}</div>
+      </div>
+      <div class="kpi-card rose" *ngIf="outOfStockCount > 0">
+        <div class="kpi-label">Out of Stock</div>
+        <div class="kpi-value">{{ outOfStockCount }}</div>
+      </div>
+    </div>
+    <div class="chart-row">
+      <div class="chart-card flex-2">
+        <h3>Stock Levels (Top 10)</h3>
+        <div class="chart-wrap">
+          <canvas #stockBarChart></canvas>
+        </div>
+      </div>
+      <div class="chart-card flex-1">
+        <h3>Stock Health</h3>
+        <div class="chart-wrap doughnut-wrap">
+          <canvas #stockDoughnutChart></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ TRANSACTIONS REPORT ═══ -->
+  <div *ngIf="activeTab === 'transactions'" class="report-content">
+    <div class="kpi-row">
+      <div class="kpi-card sky">
+        <div class="kpi-label">Total Transactions</div>
+        <div class="kpi-value">{{ totalTxCount }}</div>
+      </div>
+      <div class="kpi-card emerald">
+        <div class="kpi-label">Avg / Day</div>
+        <div class="kpi-value">{{ avgTxPerDay | number:'1.1-1' }}</div>
+      </div>
+    </div>
+    <div class="chart-card">
+      <h3>Transaction Volume</h3>
+      <div class="chart-wrap">
+        <canvas #txLineChart></canvas>
+      </div>
+    </div>
+    <div class="chart-row" *ngIf="paymentBreakdown.length > 0">
+      <div class="chart-card flex-1">
+        <h3>Payment Methods</h3>
+        <div class="chart-wrap doughnut-wrap">
+          <canvas #paymentDoughnutChart></canvas>
+        </div>
+      </div>
+      <div class="chart-card flex-1">
+        <h3>Breakdown</h3>
+        <div class="breakdown-list">
+          <div *ngFor="let pm of paymentBreakdown" class="breakdown-row">
+            <span class="bk-method">{{ pm.method }}</span>
+            <span class="bk-count">{{ pm.count }} txns</span>
+            <span class="bk-total">₹{{ pm.total | number:'1.2-2' }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PROFIT / LOSS REPORT ═══ -->
+  <div *ngIf="activeTab === 'profit'" class="report-content">
+    <div class="kpi-row">
+      <div class="kpi-card emerald">
+        <div class="kpi-label">Revenue</div>
+        <div class="kpi-value">₹{{ totalRevenue | number:'1.2-2' }}</div>
+      </div>
+      <div class="kpi-card rose">
+        <div class="kpi-label">Cost</div>
+        <div class="kpi-value">₹{{ totalCost | number:'1.2-2' }}</div>
+      </div>
+      <div class="kpi-card" [ngClass]="totalProfit >= 0 ? 'amber' : 'rose'">
+        <div class="kpi-label">{{ totalProfit >= 0 ? 'Profit' : 'Loss' }}</div>
+        <div class="kpi-value">₹{{ totalProfit | number:'1.2-2' }}</div>
+      </div>
+      <div class="kpi-card sky">
+        <div class="kpi-label">Margin</div>
+        <div class="kpi-value">{{ profitMargin | number:'1.1-1' }}%</div>
+      </div>
+    </div>
+    <div class="kpi-row" *ngIf="totalDiscountGiven > 0">
+      <div class="kpi-card violet full-width">
+        <div class="kpi-label">Total Discounts Given</div>
+        <div class="kpi-value">₹{{ totalDiscountGiven | number:'1.2-2' }}</div>
+      </div>
+    </div>
+    <div class="chart-card">
+      <h3>Revenue vs Cost vs Profit</h3>
+      <div class="chart-wrap chart-wrap-lg">
+        <canvas #profitChart></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty state -->
+  <div *ngIf="transactions.length === 0 && activeTab !== 'stock'" class="empty-report">
+    <ion-icon name="bar-chart-outline"></ion-icon>
+    <p>No transaction data yet</p>
+    <small>Complete some sales to see reports</small>
+  </div>
+
+  <div *ngIf="products.length === 0 && activeTab === 'stock'" class="empty-report">
+    <ion-icon name="cube-outline"></ion-icon>
+    <p>No products in inventory</p>
+    <small>Add products to see stock reports</small>
+  </div>
+</ion-content>

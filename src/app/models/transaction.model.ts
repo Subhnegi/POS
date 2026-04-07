@@ -3,6 +3,7 @@ export interface TransactionItem {
   productName: string;
   quantity: number;
   price: number;
+  costPrice: number;
 }
 
 export interface Transaction {
