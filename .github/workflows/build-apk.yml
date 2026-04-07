@@ -10,7 +10,7 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build-apk:
@@ -61,9 +61,21 @@ jobs:
       - name: Build debug APK
         run: cd android && chmod +x gradlew && ./gradlew assembleDebug --no-daemon
 
-      - name: Upload APK artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: pos-debug-apk
-          path: android/app/build/outputs/apk/debug/app-debug.apk
-          retention-days: 30
+      - name: Prepare release info
+        id: info
+        run: |
+          SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
+          TAG="v$(date +'%Y.%m.%d')-${SHORT_SHA}"
+          APK="pos-app-debug-${SHORT_SHA}.apk"
+          cp android/app/build/outputs/apk/debug/app-debug.apk "$APK"
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "apk=$APK" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release with APK
+        run: |
+          gh release create "${{ steps.info.outputs.tag }}" \
+            "${{ steps.info.outputs.apk }}" \
+            --title "POS App ${{ steps.info.outputs.tag }}" \
+            --notes "Debug APK built from commit [${{ github.sha }}](https://github.com/${{ github.repository }}/commit/${{ github.sha }})"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
