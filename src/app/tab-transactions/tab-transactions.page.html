@@ -1,0 +1,101 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-title>Transactions</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <!-- Loading -->
+  <div *ngIf="isLoading" class="ion-text-center ion-padding">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p>Loading transactions...</p>
+  </div>
+
+  <!-- Pending Transactions Section -->
+  <ion-card *ngIf="pendingTransactions.length > 0" class="pending-section">
+    <ion-card-header>
+      <ion-card-title color="warning">
+        <ion-icon name="time-outline"></ion-icon>
+        Pending (Offline)
+      </ion-card-title>
+      <ion-card-subtitle>{{ pendingTransactions.length }} transaction(s) waiting to sync</ion-card-subtitle>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-list lines="none">
+        <ion-item *ngFor="let t of pendingTransactions" class="transaction-item">
+          <ion-icon [name]="getStatusIcon(t.status)" [color]="getStatusColor(t.status)" slot="start"></ion-icon>
+          <ion-label>
+            <h3>₹{{ t.total | number:'1.2-2' }}</h3>
+            <p>{{ formatDate(t.createdAt) }}</p>
+            <p>{{ t.items.length }} item(s) · {{ t.counterId.substring(0, 8) }}</p>
+          </ion-label>
+          <ion-badge [color]="getStatusColor(t.status)" slot="end">{{ t.status }}</ion-badge>
+        </ion-item>
+      </ion-list>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Synced Transactions -->
+  <div *ngIf="!isLoading && transactions.length === 0 && pendingTransactions.length === 0" class="empty-state ion-text-center ion-padding">
+    <ion-icon name="receipt-outline" class="empty-icon"></ion-icon>
+    <h2>No Transactions Yet</h2>
+    <p>Complete a sale in the POS tab to see it here</p>
+    <ion-button routerLink="/tabs/pos" color="success">
+      <ion-icon name="cart" slot="start"></ion-icon>
+      Go to POS
+    </ion-button>
+  </div>
+
+  <ion-list *ngIf="!isLoading && transactions.length > 0" lines="none" class="transaction-list">
+    <div *ngFor="let transaction of transactions">
+      <ion-item
+        class="transaction-item"
+        (click)="toggleExpand(transaction.id)"
+        button
+        detail="false">
+        <div class="transaction-date-badge" slot="start">
+          <div class="day">{{ formatShortDate(transaction.createdAt) }}</div>
+          <div class="time">{{ formatTime(transaction.createdAt) }}</div>
+        </div>
+        <ion-label>
+          <h2 class="transaction-total">₹{{ transaction.total | number:'1.2-2' }}</h2>
+          <p>{{ transaction.items.length }} item(s) · Counter: {{ transaction.counterId.substring(0, 8) }}</p>
+        </ion-label>
+        <div slot="end" class="transaction-status">
+          <ion-badge [color]="getStatusColor(transaction.status)">
+            <ion-icon [name]="getStatusIcon(transaction.status)" size="small"></ion-icon>
+            {{ transaction.status }}
+          </ion-badge>
+          <ion-icon
+            [name]="expandedId === transaction.id ? 'chevron-up' : 'chevron-down'"
+            class="expand-icon">
+          </ion-icon>
+        </div>
+      </ion-item>
+
+      <!-- Expanded Details -->
+      <ion-card *ngIf="expandedId === transaction.id" class="detail-card">
+        <ion-card-content>
+          <ion-list lines="full">
+            <ion-item *ngFor="let item of transaction.items" class="detail-item">
+              <ion-label>
+                <h3>{{ item.productName }}</h3>
+                <p>₹{{ item.price | number:'1.2-2' }} × {{ item.quantity }}</p>
+              </ion-label>
+              <ion-note slot="end" class="item-subtotal">
+                ₹{{ (item.price * item.quantity) | number:'1.2-2' }}
+              </ion-note>
+            </ion-item>
+          </ion-list>
+          <div class="detail-total">
+            <strong>Total: ₹{{ transaction.total | number:'1.2-2' }}</strong>
+          </div>
+          <div class="detail-meta">
+            <small>ID: {{ transaction.id.substring(0, 12) }}...</small><br>
+            <small>Date: {{ formatDate(transaction.createdAt) }}</small>
+          </div>
+        </ion-card-content>
+      </ion-card>
+    </div>
+  </ion-list>
+</ion-content>

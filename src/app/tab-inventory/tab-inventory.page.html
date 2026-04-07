@@ -1,0 +1,129 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-title>Inventory</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="openAddForm()" id="add-product-btn">
+        <ion-icon name="add-circle" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+  <ion-toolbar>
+    <ion-searchbar
+      [(ngModel)]="searchTerm"
+      (ionInput)="filterProducts()"
+      placeholder="Search products..."
+      debounce="300"
+      animated="true">
+    </ion-searchbar>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <!-- Loading -->
+  <div *ngIf="isLoading" class="ion-text-center ion-padding">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p>Loading products...</p>
+  </div>
+
+  <!-- Add/Edit Form -->
+  <ion-card *ngIf="showForm" class="form-card">
+    <ion-card-header>
+      <ion-card-title>{{ isEditing ? 'Edit Product' : 'Add New Product' }}</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-list>
+        <ion-item>
+          <ion-label position="stacked">Product Name *</ion-label>
+          <ion-input
+            [(ngModel)]="formProduct.name"
+            placeholder="Enter product name"
+            type="text"
+            required>
+          </ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label position="stacked">Price (₹) *</ion-label>
+          <ion-input
+            [(ngModel)]="formProduct.price"
+            placeholder="0.00"
+            type="number"
+            min="0"
+            step="0.01"
+            required>
+          </ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-label position="stacked">Stock Quantity *</ion-label>
+          <ion-input
+            [(ngModel)]="formProduct.stock"
+            placeholder="0"
+            type="number"
+            min="0"
+            step="1"
+            required>
+          </ion-input>
+        </ion-item>
+      </ion-list>
+      <div class="form-actions">
+        <ion-button expand="block" color="primary" (click)="saveProduct()">
+          <ion-icon [name]="isEditing ? 'checkmark' : 'add'" slot="start"></ion-icon>
+          {{ isEditing ? 'Update' : 'Add Product' }}
+        </ion-button>
+        <ion-button expand="block" fill="outline" color="medium" (click)="cancelForm()">
+          Cancel
+        </ion-button>
+      </div>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Empty State -->
+  <div *ngIf="!isLoading && products.length === 0" class="empty-state ion-text-center ion-padding">
+    <ion-icon name="cube-outline" class="empty-icon"></ion-icon>
+    <h2>No Products Yet</h2>
+    <p>Add your first product to get started</p>
+    <ion-button (click)="openAddForm()" color="primary">
+      <ion-icon name="add" slot="start"></ion-icon>
+      Add Product
+    </ion-button>
+  </div>
+
+  <!-- Product List -->
+  <ion-list *ngIf="!isLoading && filteredProducts.length > 0" lines="none">
+    <ion-item-sliding *ngFor="let product of filteredProducts">
+      <ion-item class="product-item">
+        <ion-avatar slot="start" class="product-avatar">
+          <div class="avatar-text">{{ product.name.charAt(0).toUpperCase() }}</div>
+        </ion-avatar>
+        <ion-label>
+          <h2>{{ product.name }}</h2>
+          <p class="product-price">₹{{ product.price | number:'1.2-2' }}</p>
+        </ion-label>
+        <ion-badge [color]="getStockColor(product.stock)" slot="end">
+          {{ product.stock }} in stock
+        </ion-badge>
+      </ion-item>
+
+      <ion-item-options side="end">
+        <ion-item-option color="primary" (click)="openEditForm(product)">
+          <ion-icon name="create" slot="icon-only"></ion-icon>
+        </ion-item-option>
+        <ion-item-option color="danger" (click)="confirmDelete(product)">
+          <ion-icon name="trash" slot="icon-only"></ion-icon>
+        </ion-item-option>
+      </ion-item-options>
+    </ion-item-sliding>
+  </ion-list>
+
+  <!-- No search results -->
+  <div *ngIf="!isLoading && products.length > 0 && filteredProducts.length === 0" class="ion-text-center ion-padding">
+    <ion-icon name="search-outline" style="font-size: 48px; color: var(--ion-color-medium);"></ion-icon>
+    <p>No products match "{{ searchTerm }}"</p>
+  </div>
+
+  <!-- FAB Button -->
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button (click)="openAddForm()" color="primary" id="fab-add-product">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+</ion-content>
