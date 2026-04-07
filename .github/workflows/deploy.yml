@@ -8,6 +8,9 @@ on:
 permissions:
   contents: write
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
@@ -21,14 +24,12 @@ jobs:
         with:
           node-version: 20
           cache: npm
-          cache-dependency-path: pos-app/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: Install dependencies
-        working-directory: pos-app
         run: npm ci --legacy-peer-deps
 
       - name: Inject Firebase environment variables
-        working-directory: pos-app
         run: |
           sed -i "s|__FIREBASE_API_KEY__|${{ secrets.FIREBASE_API_KEY }}|g" src/environments/environment.prod.ts
           sed -i "s|__FIREBASE_AUTH_DOMAIN__|${{ secrets.FIREBASE_AUTH_DOMAIN }}|g" src/environments/environment.prod.ts
@@ -39,11 +40,10 @@ jobs:
           sed -i "s|__FIREBASE_MEASUREMENT_ID__|${{ secrets.FIREBASE_MEASUREMENT_ID }}|g" src/environments/environment.prod.ts
 
       - name: Build for production
-        working-directory: pos-app
         run: npx ng build --configuration production --base-href /POS/
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: pos-app/www
+          publish_dir: ./www
