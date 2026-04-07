@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject, Injector, runInInjectionContext } from '@angular/core';
 import {
   Firestore,
   collection,
@@ -16,18 +16,18 @@ import { Product } from '../models/product.model';
   providedIn: 'root'
 })
 export class ProductService {
+  private firestore = inject(Firestore);
+  private injector = inject(Injector);
   private collectionName = 'products';
-
-  constructor(private firestore: Firestore) {}
+  private productsRef = collection(this.firestore, this.collectionName);
+  private products$ = collectionData(this.productsRef, { idField: 'id' }) as Observable<Product[]>;
 
   getProducts(): Observable<Product[]> {
-    const productsRef = collection(this.firestore, this.collectionName);
-    return collectionData(productsRef, { idField: 'id' }) as Observable<Product[]>;
+    return this.products$;
   }
 
   async addProduct(product: Omit<Product, 'id'>): Promise<string> {
-    const productsRef = collection(this.firestore, this.collectionName);
-    const docRef = await addDoc(productsRef, product);
+    const docRef = await addDoc(this.productsRef, product);
     return docRef.id;
   }
 
@@ -42,7 +42,9 @@ export class ProductService {
   }
 
   getProduct(id: string): Observable<Product> {
-    const productRef = doc(this.firestore, this.collectionName, id);
-    return docData(productRef, { idField: 'id' }) as Observable<Product>;
+    return runInInjectionContext(this.injector, () => {
+      const productRef = doc(this.firestore, this.collectionName, id);
+      return docData(productRef, { idField: 'id' }) as Observable<Product>;
+    });
   }
 }

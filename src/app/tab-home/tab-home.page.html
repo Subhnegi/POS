@@ -1,127 +1,118 @@
-<ion-header [translucent]="true">
-  <ion-toolbar color="primary">
-    <ion-title>POS Dashboard</ion-title>
+﻿<ion-header>
+  <ion-toolbar>
+    <ion-title>Dashboard</ion-title>
     <ion-buttons slot="end">
-      <ion-chip [color]="isOnline ? 'success' : 'danger'" outline="true">
-        <ion-icon [name]="isOnline ? 'wifi' : 'cloud-offline'" size="small"></ion-icon>
-        <ion-label>{{ isOnline ? 'Online' : 'Offline' }}</ion-label>
-      </ion-chip>
+      <div class="status-pill" [class.online]="isOnline" [class.offline]="!isOnline">
+        <span class="status-dot"></span>
+        <span class="status-text">{{ isOnline ? 'Online' : 'Offline' }}</span>
+      </div>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true" class="ion-padding">
+
   <!-- Counter Badge -->
-  <div class="counter-badge">
-    <ion-chip color="tertiary">
-      <ion-icon name="desktop-outline"></ion-icon>
-      <ion-label>{{ counterLabel }}</ion-label>
-    </ion-chip>
+  <div class="counter-strip">
+    <div class="counter-chip">
+      <ion-icon name="terminal-outline"></ion-icon>
+      <span>{{ counterLabel }}</span>
+    </div>
+    <div class="time-display">{{ currentTime }}</div>
   </div>
 
-  <!-- Stats Cards -->
-  <ion-grid>
-    <ion-row>
-      <ion-col size="6">
-        <ion-card class="stat-card stat-products">
-          <ion-card-content>
-            <ion-icon name="cube" class="stat-icon"></ion-icon>
-            <div class="stat-value">{{ totalProducts }}</div>
-            <div class="stat-label">Products</div>
-          </ion-card-content>
-        </ion-card>
-      </ion-col>
-      <ion-col size="6">
-        <ion-card class="stat-card stat-stock">
-          <ion-card-content>
-            <ion-icon name="layers" class="stat-icon"></ion-icon>
-            <div class="stat-value">{{ totalStock }}</div>
-            <div class="stat-label">Total Stock</div>
-          </ion-card-content>
-        </ion-card>
-      </ion-col>
-      <ion-col size="6">
-        <ion-card class="stat-card stat-transactions">
-          <ion-card-content>
-            <ion-icon name="receipt" class="stat-icon"></ion-icon>
-            <div class="stat-value">{{ totalTransactions }}</div>
-            <div class="stat-label">Transactions</div>
-          </ion-card-content>
-        </ion-card>
-      </ion-col>
-      <ion-col size="6">
-        <ion-card class="stat-card stat-revenue">
-          <ion-card-content>
-            <ion-icon name="cash" class="stat-icon"></ion-icon>
-            <div class="stat-value">₹{{ todayRevenue | number:'1.2-2' }}</div>
-            <div class="stat-label">Today's Revenue</div>
-          </ion-card-content>
-        </ion-card>
-      </ion-col>
-    </ion-row>
-  </ion-grid>
+  <!-- Stats Grid -->
+  <div class="stats-grid">
+    <div class="stat-tile" style="animation-delay: 0s">
+      <div class="stat-icon-wrap amber">
+        <ion-icon name="cube"></ion-icon>
+      </div>
+      <div class="stat-info">
+        <span class="stat-value">{{ totalProducts }}</span>
+        <span class="stat-label">Products</span>
+      </div>
+    </div>
 
-  <!-- Pending Sync Section -->
-  <ion-card *ngIf="pendingTransactionsCount > 0" class="pending-card">
-    <ion-card-header>
-      <ion-card-title color="warning">
-        <ion-icon name="time-outline"></ion-icon>
-        Pending Sync
-      </ion-card-title>
-    </ion-card-header>
-    <ion-card-content>
-      <p>{{ pendingTransactionsCount }} transaction(s) waiting to sync</p>
-      <ion-button expand="block" color="warning" (click)="syncNow()" [disabled]="!isOnline">
-        <ion-icon name="sync-outline" slot="start"></ion-icon>
-        Sync Now
-      </ion-button>
-    </ion-card-content>
-  </ion-card>
+    <div class="stat-tile" style="animation-delay: 0.05s">
+      <div class="stat-icon-wrap sky">
+        <ion-icon name="layers"></ion-icon>
+      </div>
+      <div class="stat-info">
+        <span class="stat-value">{{ totalStock }}</span>
+        <span class="stat-label">Total Stock</span>
+      </div>
+    </div>
+
+    <div class="stat-tile" style="animation-delay: 0.1s">
+      <div class="stat-icon-wrap violet">
+        <ion-icon name="receipt"></ion-icon>
+      </div>
+      <div class="stat-info">
+        <span class="stat-value">{{ totalTransactions }}</span>
+        <span class="stat-label">Transactions</span>
+      </div>
+    </div>
+
+    <div class="stat-tile" style="animation-delay: 0.15s">
+      <div class="stat-icon-wrap emerald">
+        <ion-icon name="trending-up"></ion-icon>
+      </div>
+      <div class="stat-info">
+        <span class="stat-value">{{ todayRevenue | number:'1.0-0' }}</span>
+        <span class="stat-label">Today Revenue</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pending Sync -->
+  <div *ngIf="pendingTransactionsCount > 0" class="alert-card pending-alert">
+    <div class="alert-icon-wrap">
+      <ion-icon name="sync-outline"></ion-icon>
+    </div>
+    <div class="alert-body">
+      <h4>{{ pendingTransactionsCount }} Pending Sync</h4>
+      <p>Transaction(s) waiting to sync</p>
+    </div>
+    <button class="sync-btn" (click)="syncNow()" [disabled]="!isOnline">
+      <ion-icon name="cloud-upload-outline"></ion-icon>
+      Sync
+    </button>
+  </div>
 
   <!-- Low Stock Alerts -->
-  <ion-card *ngIf="lowStockProducts.length > 0" class="low-stock-card">
-    <ion-card-header>
-      <ion-card-title color="danger">
-        <ion-icon name="alert-circle-outline"></ion-icon>
-        Low Stock Alert
-      </ion-card-title>
-    </ion-card-header>
-    <ion-card-content>
-      <ion-list lines="none">
-        <ion-item *ngFor="let product of lowStockProducts">
-          <ion-icon name="warning" color="danger" slot="start"></ion-icon>
-          <ion-label>
-            <h3>{{ product.name }}</h3>
-            <p>Only {{ product.stock }} left in stock</p>
-          </ion-label>
-          <ion-badge color="danger" slot="end">{{ product.stock }}</ion-badge>
-        </ion-item>
-      </ion-list>
-    </ion-card-content>
-  </ion-card>
+  <div *ngIf="lowStockProducts.length > 0" class="section-block">
+    <div class="section-header">
+      <ion-icon name="alert-circle" class="text-rose"></ion-icon>
+      <h3>Low Stock</h3>
+      <span class="section-count">{{ lowStockProducts.length }}</span>
+    </div>
+    <div class="low-stock-list">
+      <div *ngFor="let product of lowStockProducts" class="low-stock-row">
+        <div class="product-img-wrap low-stock-img" [ngClass]="'img-grad-' + product.name.charAt(0).toLowerCase()">
+          <img *ngIf="product.imageUrl" [src]="product.imageUrl" [alt]="product.name" />
+          <div *ngIf="!product.imageUrl" class="img-placeholder img-placeholder-sm">{{ product.name.charAt(0) }}</div>
+        </div>
+        <div class="low-stock-info">
+          <span class="low-stock-name">{{ product.name }}</span>
+          <span class="low-stock-qty">{{ product.stock }} remaining</span>
+        </div>
+        <div class="stock-indicator" [class.critical]="product.stock <= 2">
+          {{ product.stock }}
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- Quick Actions -->
-  <ion-card class="quick-actions-card">
-    <ion-card-header>
-      <ion-card-title>Quick Actions</ion-card-title>
-    </ion-card-header>
-    <ion-card-content>
-      <ion-grid>
-        <ion-row>
-          <ion-col size="6">
-            <ion-button expand="block" routerLink="/tabs/pos" color="success">
-              <ion-icon name="cart" slot="start"></ion-icon>
-              New Sale
-            </ion-button>
-          </ion-col>
-          <ion-col size="6">
-            <ion-button expand="block" routerLink="/tabs/inventory" color="primary">
-              <ion-icon name="add-circle" slot="start"></ion-icon>
-              Add Product
-            </ion-button>
-          </ion-col>
-        </ion-row>
-      </ion-grid>
-    </ion-card-content>
-  </ion-card>
+  <div class="quick-actions">
+    <button class="action-btn action-sale" routerLink="/tabs/pos">
+      <ion-icon name="cart"></ion-icon>
+      <span>New Sale</span>
+    </button>
+    <button class="action-btn action-product" routerLink="/tabs/inventory">
+      <ion-icon name="add-circle"></ion-icon>
+      <span>Add Product</span>
+    </button>
+  </div>
+
 </ion-content>

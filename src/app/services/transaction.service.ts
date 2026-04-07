@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import {
   Firestore,
   collection,
@@ -19,20 +19,24 @@ import { CounterService } from './counter.service';
   providedIn: 'root'
 })
 export class TransactionService {
+  private firestore = inject(Firestore);
+  private counterService = inject(CounterService);
   private collectionName = 'transactions';
-
-  constructor(
-    private firestore: Firestore,
-    private counterService: CounterService
-  ) {}
+  private transactionsRef = collection(this.firestore, this.collectionName);
+  private transactionsQuery = query(this.transactionsRef, orderBy('createdAt', 'desc'));
+  private transactions$ = collectionData(this.transactionsQuery, { idField: 'id' }) as Observable<Transaction[]>;
 
   getTransactions(): Observable<Transaction[]> {
-    const transactionsRef = collection(this.firestore, this.collectionName);
-    const q = query(transactionsRef, orderBy('createdAt', 'desc'));
-    return collectionData(q, { idField: 'id' }) as Observable<Transaction[]>;
+    return this.transactions$;
   }
 
-  async checkout(cartItems: CartItem[]): Promise<Transaction> {
+  async checkout(cartItems: CartItem[], checkoutData: {
+    customerName: string;
+    customerPhone: string;
+    offerCode: string;
+    discountPercent: number;
+    paymentMethod: string;
+  }): Promise<Transaction> {
     const counterId = this.counterService.getCounterId();
     const batch = writeBatch(this.firestore);
 
@@ -43,14 +47,24 @@ export class TransactionService {
       price: item.product.price
     }));
 
-    const total = cartItems.reduce(
+    const subtotal = cartItems.reduce(
       (sum, item) => sum + item.product.price * item.quantity,
       0
     );
 
+    const discountAmount = Math.round(subtotal * checkoutData.discountPercent) / 100;
+    const total = subtotal - discountAmount;
+
     const transaction: Omit<Transaction, 'id'> = {
       items: transactionItems,
+      subtotal,
+      discountPercent: checkoutData.discountPercent,
+      discountAmount,
       total,
+      customerName: checkoutData.customerName,
+      customerPhone: checkoutData.customerPhone,
+      offerCode: checkoutData.offerCode,
+      paymentMethod: checkoutData.paymentMethod,
       counterId,
       status: 'synced',
       createdAt: Date.now()
@@ -64,8 +78,7 @@ export class TransactionService {
     });
 
     // Add transaction
-    const transactionsRef = collection(this.firestore, this.collectionName);
-    const transactionDoc = doc(transactionsRef);
+    const transactionDoc = doc(this.transactionsRef);
     batch.set(transactionDoc, transaction);
 
     await batch.commit();

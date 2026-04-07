@@ -1,9 +1,9 @@
-<ion-header [translucent]="true">
-  <ion-toolbar color="primary">
+﻿<ion-header>
+  <ion-toolbar>
     <ion-title>Inventory</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="openAddForm()" id="add-product-btn">
-        <ion-icon name="add-circle" slot="icon-only"></ion-icon>
+      <ion-button (click)="openAddForm()" class="header-add-btn">
+        <ion-icon name="add" slot="icon-only"></ion-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
@@ -20,109 +20,117 @@
 
 <ion-content [fullscreen]="true">
   <!-- Loading -->
-  <div *ngIf="isLoading" class="ion-text-center ion-padding">
+  <div *ngIf="isLoading" class="loading-state">
     <ion-spinner name="crescent"></ion-spinner>
     <p>Loading products...</p>
   </div>
 
   <!-- Add/Edit Form -->
-  <ion-card *ngIf="showForm" class="form-card">
-    <ion-card-header>
-      <ion-card-title>{{ isEditing ? 'Edit Product' : 'Add New Product' }}</ion-card-title>
-    </ion-card-header>
-    <ion-card-content>
-      <ion-list>
-        <ion-item>
-          <ion-label position="stacked">Product Name *</ion-label>
-          <ion-input
-            [(ngModel)]="formProduct.name"
-            placeholder="Enter product name"
-            type="text"
-            required>
-          </ion-input>
-        </ion-item>
-        <ion-item>
-          <ion-label position="stacked">Price (₹) *</ion-label>
-          <ion-input
-            [(ngModel)]="formProduct.price"
-            placeholder="0.00"
-            type="number"
-            min="0"
-            step="0.01"
-            required>
-          </ion-input>
-        </ion-item>
-        <ion-item>
-          <ion-label position="stacked">Stock Quantity *</ion-label>
-          <ion-input
-            [(ngModel)]="formProduct.stock"
-            placeholder="0"
-            type="number"
-            min="0"
-            step="1"
-            required>
-          </ion-input>
-        </ion-item>
-      </ion-list>
-      <div class="form-actions">
-        <ion-button expand="block" color="primary" (click)="saveProduct()">
-          <ion-icon [name]="isEditing ? 'checkmark' : 'add'" slot="start"></ion-icon>
-          {{ isEditing ? 'Update' : 'Add Product' }}
-        </ion-button>
-        <ion-button expand="block" fill="outline" color="medium" (click)="cancelForm()">
-          Cancel
-        </ion-button>
+  <div *ngIf="showForm" class="form-overlay" (click)="cancelForm()">
+    <div class="form-panel" (click)="$event.stopPropagation()">
+      <div class="form-header">
+        <h2>{{ isEditing ? 'Edit Product' : 'New Product' }}</h2>
+        <button class="form-close" (click)="cancelForm()">
+          <ion-icon name="close"></ion-icon>
+        </button>
       </div>
-    </ion-card-content>
-  </ion-card>
+
+      <!-- Image Drop Zone -->
+      <div class="image-drop-zone"
+           [class.has-image]="formProduct.imageUrl"
+           [class.drag-over]="isDraggingImage"
+           (dragover)="onDragOver($event)"
+           (dragleave)="onDragLeave($event)"
+           (drop)="onImageDrop($event)"
+           (click)="imageInput.click()">
+        <img *ngIf="formProduct.imageUrl" [src]="formProduct.imageUrl" alt="Product" />
+        <div *ngIf="!formProduct.imageUrl" class="drop-placeholder">
+          <ion-icon name="image-outline"></ion-icon>
+          <span>Drag & drop image or click to browse</span>
+          <small>PNG, JPG up to 500KB</small>
+        </div>
+        <input #imageInput type="file" accept="image/*" hidden (change)="onImageSelected($event)" />
+      </div>
+      <button *ngIf="formProduct.imageUrl" class="remove-img-btn" (click)="formProduct.imageUrl = ''">
+        <ion-icon name="trash-outline"></ion-icon> Remove Image
+      </button>
+
+      <div class="form-fields">
+        <div class="field-group">
+          <label>Product Name</label>
+          <input type="text" [(ngModel)]="formProduct.name" placeholder="e.g. Espresso Shot" />
+        </div>
+        <div class="field-row">
+          <div class="field-group">
+            <label>Price (₹)</label>
+            <input type="number" [(ngModel)]="formProduct.price" placeholder="0.00" min="0" step="0.01" />
+          </div>
+          <div class="field-group">
+            <label>Stock</label>
+            <input type="number" [(ngModel)]="formProduct.stock" placeholder="0" min="0" step="1" />
+          </div>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button class="btn-primary" (click)="saveProduct()">
+          <ion-icon [name]="isEditing ? 'checkmark' : 'add'"></ion-icon>
+          {{ isEditing ? 'Update Product' : 'Add Product' }}
+        </button>
+        <button class="btn-ghost" (click)="cancelForm()">Cancel</button>
+      </div>
+    </div>
+  </div>
 
   <!-- Empty State -->
-  <div *ngIf="!isLoading && products.length === 0" class="empty-state ion-text-center ion-padding">
-    <ion-icon name="cube-outline" class="empty-icon"></ion-icon>
+  <div *ngIf="!isLoading && products.length === 0" class="empty-state">
+    <div class="empty-icon-wrap">
+      <ion-icon name="cube-outline"></ion-icon>
+    </div>
     <h2>No Products Yet</h2>
     <p>Add your first product to get started</p>
-    <ion-button (click)="openAddForm()" color="primary">
-      <ion-icon name="add" slot="start"></ion-icon>
+    <button class="btn-primary" (click)="openAddForm()">
+      <ion-icon name="add"></ion-icon>
       Add Product
-    </ion-button>
+    </button>
   </div>
 
   <!-- Product List -->
-  <ion-list *ngIf="!isLoading && filteredProducts.length > 0" lines="none">
-    <ion-item-sliding *ngFor="let product of filteredProducts">
-      <ion-item class="product-item">
-        <ion-avatar slot="start" class="product-avatar">
-          <div class="avatar-text">{{ product.name.charAt(0).toUpperCase() }}</div>
-        </ion-avatar>
-        <ion-label>
-          <h2>{{ product.name }}</h2>
-          <p class="product-price">₹{{ product.price | number:'1.2-2' }}</p>
-        </ion-label>
-        <ion-badge [color]="getStockColor(product.stock)" slot="end">
-          {{ product.stock }} in stock
-        </ion-badge>
-      </ion-item>
-
-      <ion-item-options side="end">
-        <ion-item-option color="primary" (click)="openEditForm(product)">
-          <ion-icon name="create" slot="icon-only"></ion-icon>
-        </ion-item-option>
-        <ion-item-option color="danger" (click)="confirmDelete(product)">
-          <ion-icon name="trash" slot="icon-only"></ion-icon>
-        </ion-item-option>
-      </ion-item-options>
-    </ion-item-sliding>
-  </ion-list>
+  <div *ngIf="!isLoading && filteredProducts.length > 0" class="product-list">
+    <div *ngFor="let product of filteredProducts; let i = index"
+         class="inv-product-card"
+         [style.animation-delay]="(i * 0.04) + 's'">
+      <div class="product-img-wrap inv-img" [ngClass]="'img-grad-' + product.name.charAt(0).toLowerCase()">
+        <img *ngIf="product.imageUrl" [src]="product.imageUrl" [alt]="product.name" />
+        <div *ngIf="!product.imageUrl" class="img-placeholder img-placeholder-sm">{{ product.name.charAt(0) }}</div>
+      </div>
+      <div class="inv-info">
+        <span class="inv-name">{{ product.name }}</span>
+        <span class="inv-price">₹{{ product.price | number:'1.2-2' }}</span>
+      </div>
+      <div class="inv-stock" [class.danger]="product.stock === 0" [class.warning]="product.stock > 0 && product.stock <= 5">
+        {{ product.stock }}
+      </div>
+      <div class="inv-actions">
+        <button class="icon-btn" (click)="openEditForm(product)">
+          <ion-icon name="create-outline"></ion-icon>
+        </button>
+        <button class="icon-btn danger" (click)="confirmDelete(product)">
+          <ion-icon name="trash-outline"></ion-icon>
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- No search results -->
-  <div *ngIf="!isLoading && products.length > 0 && filteredProducts.length === 0" class="ion-text-center ion-padding">
-    <ion-icon name="search-outline" style="font-size: 48px; color: var(--ion-color-medium);"></ion-icon>
+  <div *ngIf="!isLoading && products.length > 0 && filteredProducts.length === 0" class="empty-state">
+    <ion-icon name="search-outline" style="font-size: 48px; color: var(--pos-text-muted);"></ion-icon>
     <p>No products match "{{ searchTerm }}"</p>
   </div>
 
-  <!-- FAB Button -->
+  <!-- FAB -->
   <ion-fab vertical="bottom" horizontal="end" slot="fixed">
-    <ion-fab-button (click)="openAddForm()" color="primary" id="fab-add-product">
+    <ion-fab-button (click)="openAddForm()" class="fab-add">
       <ion-icon name="add"></ion-icon>
     </ion-fab-button>
   </ion-fab>

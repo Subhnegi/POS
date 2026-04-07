@@ -1,120 +1,266 @@
-<ion-header [translucent]="true">
-  <ion-toolbar color="success">
+﻿<ion-header>
+  <ion-toolbar>
     <ion-title>Point of Sale</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="toggleCart()" id="cart-toggle-btn">
-        <ion-icon name="cart" slot="icon-only"></ion-icon>
-        <ion-badge *ngIf="getCartItemCount() > 0" color="danger" class="cart-badge">
-          {{ getCartItemCount() }}
-        </ion-badge>
-      </ion-button>
+      <div *ngIf="!isOnline" class="offline-chip">
+        <ion-icon name="cloud-offline-outline"></ion-icon>
+        Offline
+      </div>
     </ion-buttons>
-  </ion-toolbar>
-  <ion-toolbar>
-    <ion-searchbar
-      [(ngModel)]="searchTerm"
-      (ionInput)="filterProducts()"
-      placeholder="Search products..."
-      debounce="300"
-      animated="true">
-    </ion-searchbar>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <!-- Offline Banner -->
-  <ion-item *ngIf="!isOnline" color="warning" lines="none" class="offline-banner">
-    <ion-icon name="cloud-offline" slot="start"></ion-icon>
-    <ion-label>
-      <strong>Offline Mode</strong>
-      <p>Transactions will be saved locally and synced later</p>
-    </ion-label>
-  </ion-item>
-
-  <!-- Loading -->
-  <div *ngIf="isLoading" class="ion-text-center ion-padding">
-    <ion-spinner name="crescent"></ion-spinner>
-    <p>Loading products...</p>
-  </div>
-
-  <!-- Cart Panel (Slide-in) -->
-  <div class="cart-panel" [class.active]="showCart">
-    <div class="cart-header">
-      <h2>
-        <ion-icon name="cart"></ion-icon>
-        Shopping Cart
-      </h2>
-      <ion-button fill="clear" (click)="toggleCart()">
-        <ion-icon name="close" slot="icon-only"></ion-icon>
-      </ion-button>
-    </div>
-
-    <div *ngIf="cartItems.length === 0" class="empty-cart ion-text-center">
-      <ion-icon name="cart-outline" class="empty-icon"></ion-icon>
-      <p>Your cart is empty</p>
-    </div>
-
-    <ion-list *ngIf="cartItems.length > 0" class="cart-list">
-      <ion-item *ngFor="let item of cartItems" lines="full">
-        <ion-label>
-          <h3>{{ item.product.name }}</h3>
-          <p>₹{{ item.product.price | number:'1.2-2' }} × {{ item.quantity }}</p>
-        </ion-label>
-        <div class="qty-controls" slot="end">
-          <ion-button fill="clear" size="small" (click)="decrementQty(item.product.id)">
-            <ion-icon name="remove-circle" slot="icon-only" color="danger"></ion-icon>
-          </ion-button>
-          <span class="qty-value">{{ item.quantity }}</span>
-          <ion-button fill="clear" size="small" (click)="incrementQty(item.product.id)">
-            <ion-icon name="add-circle" slot="icon-only" color="success"></ion-icon>
-          </ion-button>
-        </div>
-      </ion-item>
-    </ion-list>
-
-    <div *ngIf="cartItems.length > 0" class="cart-footer">
-      <div class="cart-total">
-        <span>Total</span>
-        <span class="total-amount">₹{{ getCartTotal() | number:'1.2-2' }}</span>
+<ion-content [fullscreen]="true" scrollY="false">
+  <div class="pos-split">
+    <!-- ═══ LEFT: Products ═══ -->
+    <div class="pos-left">
+      <div class="search-strip">
+        <ion-searchbar
+          [(ngModel)]="searchTerm"
+          (ionInput)="filterProducts()"
+          placeholder="Search products..."
+          debounce="300"
+          animated="true">
+        </ion-searchbar>
       </div>
-      <ion-button expand="block" color="success" size="large" (click)="checkout()" id="checkout-btn">
-        <ion-icon name="checkmark-circle" slot="start"></ion-icon>
-        Checkout (₹{{ getCartTotal() | number:'1.2-2' }})
-      </ion-button>
+
+      <div *ngIf="isLoading" class="loading-state">
+        <ion-spinner name="crescent"></ion-spinner>
+        <p>Loading products...</p>
+      </div>
+
+      <div *ngIf="!isLoading && filteredProducts.length === 0" class="empty-state-sm">
+        <ion-icon name="cube-outline"></ion-icon>
+        <p>No products found</p>
+      </div>
+
+      <div class="product-scroll"
+           *ngIf="!isLoading && filteredProducts.length > 0">
+        <div class="product-grid">
+          <div *ngFor="let product of filteredProducts; let i = index"
+               class="prod-card"
+               [class.out-of-stock]="product.stock <= 0"
+               [attr.draggable]="product.stock > 0 ? 'true' : 'false'"
+               (dragstart)="onDragStart($event, product)"
+               (dragend)="onDragEnd($event)"
+               (click)="addToCart(product)"
+               [style.animation-delay]="(i * 0.03) + 's'">
+            <div class="product-img-wrap prod-thumb"
+                 [ngClass]="'img-grad-' + product.name.charAt(0).toLowerCase()">
+              <img *ngIf="product.imageUrl" [src]="product.imageUrl" [alt]="product.name" />
+              <div *ngIf="!product.imageUrl" class="img-placeholder">{{ product.name.charAt(0) }}</div>
+              <div *ngIf="product.stock <= 0" class="oos-tag">OOS</div>
+            </div>
+            <div class="prod-body">
+              <span class="prod-name">{{ product.name }}</span>
+              <span class="prod-price">₹{{ product.price | number:'1.2-2' }}</span>
+            </div>
+            <div class="prod-stock-pill"
+                 [class.warning]="product.stock > 0 && product.stock <= 5"
+                 [class.danger]="product.stock <= 0">
+              {{ product.stock }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ RIGHT: Cart & Checkout ═══ -->
+    <div class="pos-right"
+         [class.drag-hover]="isDragOverCart"
+         (dragover)="onCartDragOver($event)"
+         (dragleave)="onCartDragLeave($event)"
+         (drop)="onCartDrop($event)">
+
+      <div class="cart-header-bar">
+        <h2>
+          <ion-icon name="bag-handle"></ion-icon>
+          Cart
+        </h2>
+        <span class="cart-count-badge" *ngIf="getCartItemCount() > 0">{{ getCartItemCount() }}</span>
+      </div>
+
+      <!-- Drop hint -->
+      <div class="drop-hint" [class.visible]="isDragging">
+        <ion-icon name="arrow-down-circle-outline"></ion-icon>
+        <span>Drop product here</span>
+      </div>
+
+      <!-- Empty Cart -->
+      <div *ngIf="cartItems.length === 0 && !isDragging" class="cart-empty">
+        <div class="cart-empty-icon">
+          <ion-icon name="bag-outline"></ion-icon>
+        </div>
+        <p>Drag products here or tap to add</p>
+      </div>
+
+      <!-- Cart Items -->
+      <div class="cart-items-scroll" *ngIf="cartItems.length > 0">
+        <div *ngFor="let item of cartItems; let i = index"
+             class="cart-row"
+             [style.animation-delay]="(i * 0.04) + 's'">
+          <div class="product-img-wrap cart-thumb"
+               [ngClass]="'img-grad-' + item.product.name.charAt(0).toLowerCase()">
+            <img *ngIf="item.product.imageUrl" [src]="item.product.imageUrl" [alt]="item.product.name" />
+            <div *ngIf="!item.product.imageUrl" class="img-placeholder img-placeholder-sm">{{ item.product.name.charAt(0) }}</div>
+          </div>
+          <div class="cart-row-info">
+            <span class="cart-row-name">{{ item.product.name }}</span>
+            <span class="cart-row-unit">₹{{ item.product.price | number:'1.2-2' }}</span>
+          </div>
+          <div class="qty-ctrl">
+            <button class="qty-btn" (click)="decrementQty(item.product.id)">
+              <ion-icon name="remove"></ion-icon>
+            </button>
+            <span class="qty-val">{{ item.quantity }}</span>
+            <button class="qty-btn" (click)="incrementQty(item.product.id)">
+              <ion-icon name="add"></ion-icon>
+            </button>
+          </div>
+          <span class="cart-row-total">₹{{ (item.product.price * item.quantity) | number:'1.2-2' }}</span>
+          <button class="cart-remove-btn" (click)="removeFromCart(item.product.id)">
+            <ion-icon name="close"></ion-icon>
+          </button>
+        </div>
+      </div>
+
+      <!-- Cart Summary -->
+      <div class="cart-summary-bar" *ngIf="cartItems.length > 0">
+        <div class="summary-row">
+          <span>Subtotal</span>
+          <span>₹{{ getCartTotal() | number:'1.2-2' }}</span>
+        </div>
+        <div class="summary-row total">
+          <span>Total ({{ getCartItemCount() }} items)</span>
+          <span>₹{{ getCartTotal() | number:'1.2-2' }}</span>
+        </div>
+        <div class="cart-action-row">
+          <button class="btn-clear-cart" (click)="clearCart()">
+            <ion-icon name="trash-outline"></ion-icon>
+            Clear
+          </button>
+          <button class="btn-checkout" (click)="openCheckout()">
+            <ion-icon name="flash"></ion-icon>
+            Checkout
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- Product Grid -->
-  <ion-grid *ngIf="!isLoading" class="product-grid">
-    <ion-row>
-      <ion-col size="6" size-md="4" size-lg="3" *ngFor="let product of filteredProducts">
-        <ion-card
-          class="product-card"
-          [class.out-of-stock]="product.stock <= 0"
-          (click)="addToCart(product)"
-          button>
-          <ion-card-content>
-            <div class="product-initial">{{ product.name.charAt(0).toUpperCase() }}</div>
-            <h3 class="product-name">{{ product.name }}</h3>
-            <div class="product-price">₹{{ product.price | number:'1.2-2' }}</div>
-            <ion-badge
-              [color]="product.stock > 5 ? 'success' : product.stock > 0 ? 'warning' : 'danger'"
-              class="stock-badge">
-              {{ product.stock > 0 ? product.stock + ' left' : 'Out of stock' }}
-            </ion-badge>
-          </ion-card-content>
-        </ion-card>
-      </ion-col>
-    </ion-row>
-  </ion-grid>
+  <!-- ═══ Checkout Modal ═══ -->
+  <div *ngIf="showCheckoutModal" class="checkout-overlay" (click)="closeCheckout()">
+    <div class="checkout-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Checkout</h2>
+        <button class="modal-close" (click)="closeCheckout()">
+          <ion-icon name="close"></ion-icon>
+        </button>
+      </div>
 
-  <!-- Empty state -->
-  <div *ngIf="!isLoading && products.length === 0" class="empty-state ion-text-center ion-padding">
-    <ion-icon name="cube-outline" style="font-size: 80px; opacity: 0.4;"></ion-icon>
-    <h2>No Products Available</h2>
-    <p>Add products in the Inventory tab first</p>
-    <ion-button routerLink="/tabs/inventory" color="primary">
-      Go to Inventory
-    </ion-button>
+      <div class="modal-body">
+        <!-- Order Summary -->
+        <div class="order-summary">
+          <div class="section-label">Order Summary</div>
+          <div *ngFor="let item of cartItems" class="order-row">
+            <span class="order-item-name">{{ item.product.name }} × {{ item.quantity }}</span>
+            <span class="order-item-amt">₹{{ (item.product.price * item.quantity) | number:'1.2-2' }}</span>
+          </div>
+          <div class="order-subtotal-row">
+            <span>Subtotal</span>
+            <span>₹{{ getCartTotal() | number:'1.2-2' }}</span>
+          </div>
+        </div>
+
+        <!-- Customer Info -->
+        <div class="section-label">Customer Details <small>(optional)</small></div>
+        <div class="form-fields">
+          <div class="field-group">
+            <label>Name</label>
+            <input type="text" [(ngModel)]="checkoutData.customerName" placeholder="Walk-in Customer" />
+          </div>
+          <div class="field-group">
+            <label>Phone</label>
+            <input type="tel" [(ngModel)]="checkoutData.customerPhone" placeholder="+91 XXXXX XXXXX" />
+          </div>
+        </div>
+
+        <!-- Offers -->
+        <div class="section-label">Offer / Discount</div>
+        <div class="form-fields">
+          <div class="field-row">
+            <div class="field-group">
+              <label>Offer Code</label>
+              <input type="text" [(ngModel)]="checkoutData.offerCode" placeholder="e.g. SAVE10" (input)="applyOfferCode()" />
+            </div>
+            <div class="field-group">
+              <label>Discount %</label>
+              <input type="number" [(ngModel)]="checkoutData.discountPercent" placeholder="0" min="0" max="100" step="1" (input)="recalcCheckout()" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Payment Method -->
+        <div class="section-label">Payment Method</div>
+        <div class="payment-methods">
+          <button *ngFor="let m of paymentMethods"
+                  class="pay-method-btn"
+                  [class.active]="checkoutData.paymentMethod === m.value"
+                  (click)="checkoutData.paymentMethod = m.value">
+            <ion-icon [name]="m.icon"></ion-icon>
+            <span>{{ m.label }}</span>
+          </button>
+        </div>
+
+        <!-- Checkout Totals -->
+        <div class="checkout-totals">
+          <div class="ck-row">
+            <span>Subtotal</span>
+            <span>₹{{ checkoutSubtotal | number:'1.2-2' }}</span>
+          </div>
+          <div class="ck-row discount" *ngIf="checkoutDiscount > 0">
+            <span>Discount ({{ checkoutData.discountPercent }}%)</span>
+            <span>-₹{{ checkoutDiscount | number:'1.2-2' }}</span>
+          </div>
+          <div class="ck-row grand-total">
+            <span>Total</span>
+            <span>₹{{ checkoutGrandTotal | number:'1.2-2' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-ghost" (click)="closeCheckout()">Cancel</button>
+        <button class="btn-pay" (click)="processPayment()" [disabled]="isProcessing">
+          <ion-spinner *ngIf="isProcessing" name="crescent" class="pay-spinner"></ion-spinner>
+          <ion-icon *ngIf="!isProcessing" name="card-outline"></ion-icon>
+          {{ isProcessing ? 'Processing...' : 'Pay ₹' + (checkoutGrandTotal | number:'1.2-2') }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ Success Modal ═══ -->
+  <div *ngIf="showSuccessModal" class="checkout-overlay" (click)="closeSuccess()">
+    <div class="success-modal" (click)="$event.stopPropagation()">
+      <div class="success-anim">
+        <div class="success-circle">
+          <ion-icon name="checkmark"></ion-icon>
+        </div>
+      </div>
+      <h2>Payment Successful!</h2>
+      <p class="success-amount">₹{{ lastTransaction?.total | number:'1.2-2' }}</p>
+      <p class="success-sub">Transaction ID: {{ lastTransaction?.id?.substring(0, 12) }}...</p>
+      <div class="success-actions">
+        <button class="btn-ghost" (click)="closeSuccess()">
+          <ion-icon name="close-outline"></ion-icon>
+          Close
+        </button>
+        <button class="btn-primary" routerLink="/tabs/transactions" (click)="closeSuccess()">
+          <ion-icon name="receipt-outline"></ion-icon>
+          View Receipt
+        </button>
+      </div>
+    </div>
   </div>
 </ion-content>

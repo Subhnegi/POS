@@ -21,7 +21,8 @@ export class TabInventoryPage implements OnInit, OnDestroy {
   showForm = false;
   isEditing = false;
   editingProductId = '';
-  formProduct = { name: '', price: 0, stock: 0 };
+  formProduct = { name: '', price: 0, stock: 0, imageUrl: '' };
+  isDraggingImage = false;
 
   constructor(
     private productService: ProductService,
@@ -50,7 +51,7 @@ export class TabInventoryPage implements OnInit, OnDestroy {
   }
 
   openAddForm(): void {
-    this.formProduct = { name: '', price: 0, stock: 0 };
+    this.formProduct = { name: '', price: 0, stock: 0, imageUrl: '' };
     this.isEditing = false;
     this.editingProductId = '';
     this.showForm = true;
@@ -60,7 +61,8 @@ export class TabInventoryPage implements OnInit, OnDestroy {
     this.formProduct = {
       name: product.name,
       price: product.price,
-      stock: product.stock
+      stock: product.stock,
+      imageUrl: product.imageUrl || ''
     };
     this.isEditing = true;
     this.editingProductId = product.id;
@@ -69,7 +71,50 @@ export class TabInventoryPage implements OnInit, OnDestroy {
 
   cancelForm(): void {
     this.showForm = false;
-    this.formProduct = { name: '', price: 0, stock: 0 };
+    this.formProduct = { name: '', price: 0, stock: 0, imageUrl: '' };
+  }
+
+  onDragOver(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDraggingImage = true;
+  }
+
+  onDragLeave(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDraggingImage = false;
+  }
+
+  onImageDrop(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDraggingImage = false;
+    const file = event.dataTransfer?.files[0];
+    if (file && file.type.startsWith('image/')) {
+      this.readImageFile(file);
+    }
+  }
+
+  onImageSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (file) {
+      this.readImageFile(file);
+    }
+    input.value = '';
+  }
+
+  private readImageFile(file: File): void {
+    if (file.size > 512000) {
+      this.showToast('Image must be under 500KB', 'warning');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      this.formProduct.imageUrl = reader.result as string;
+    };
+    reader.readAsDataURL(file);
   }
 
   async saveProduct(): Promise<void> {

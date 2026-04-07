@@ -1,101 +1,156 @@
-<ion-header [translucent]="true">
-  <ion-toolbar color="primary">
+﻿<ion-header>
+  <ion-toolbar>
     <ion-title>Transactions</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
   <!-- Loading -->
-  <div *ngIf="isLoading" class="ion-text-center ion-padding">
+  <div *ngIf="isLoading" class="loading-state">
     <ion-spinner name="crescent"></ion-spinner>
     <p>Loading transactions...</p>
   </div>
 
-  <!-- Pending Transactions Section -->
-  <ion-card *ngIf="pendingTransactions.length > 0" class="pending-section">
-    <ion-card-header>
-      <ion-card-title color="warning">
-        <ion-icon name="time-outline"></ion-icon>
-        Pending (Offline)
-      </ion-card-title>
-      <ion-card-subtitle>{{ pendingTransactions.length }} transaction(s) waiting to sync</ion-card-subtitle>
-    </ion-card-header>
-    <ion-card-content>
-      <ion-list lines="none">
-        <ion-item *ngFor="let t of pendingTransactions" class="transaction-item">
-          <ion-icon [name]="getStatusIcon(t.status)" [color]="getStatusColor(t.status)" slot="start"></ion-icon>
-          <ion-label>
-            <h3>₹{{ t.total | number:'1.2-2' }}</h3>
-            <p>{{ formatDate(t.createdAt) }}</p>
-            <p>{{ t.items.length }} item(s) · {{ t.counterId.substring(0, 8) }}</p>
-          </ion-label>
-          <ion-badge [color]="getStatusColor(t.status)" slot="end">{{ t.status }}</ion-badge>
-        </ion-item>
-      </ion-list>
-    </ion-card-content>
-  </ion-card>
+  <!-- Pending Alert -->
+  <div *ngIf="pendingTransactions.length > 0" class="pending-alert">
+    <div class="pending-dot"></div>
+    <div class="pending-text">
+      <strong>{{ pendingTransactions.length }} pending</strong>
+      <span>Waiting to sync</span>
+    </div>
+  </div>
 
-  <!-- Synced Transactions -->
-  <div *ngIf="!isLoading && transactions.length === 0 && pendingTransactions.length === 0" class="empty-state ion-text-center ion-padding">
-    <ion-icon name="receipt-outline" class="empty-icon"></ion-icon>
-    <h2>No Transactions Yet</h2>
-    <p>Complete a sale in the POS tab to see it here</p>
-    <ion-button routerLink="/tabs/pos" color="success">
-      <ion-icon name="cart" slot="start"></ion-icon>
-      Go to POS
+  <!-- Pending List -->
+  <div *ngIf="pendingTransactions.length > 0" class="tx-section">
+    <div class="section-label">Pending</div>
+    <div *ngFor="let t of pendingTransactions" class="tx-card pending">
+      <div class="tx-icon-wrap amber">
+        <ion-icon name="time-outline"></ion-icon>
+      </div>
+      <div class="tx-info">
+        <span class="tx-total">₹{{ t.total | number:'1.2-2' }}</span>
+        <span class="tx-meta">{{ t.items.length }} item(s) · {{ formatDate(t.createdAt) }}</span>
+      </div>
+      <span class="tx-badge amber">pending</span>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!isLoading && transactions.length === 0 && pendingTransactions.length === 0" class="empty-state">
+    <div class="empty-icon-wrap">
+      <ion-icon name="receipt-outline"></ion-icon>
+    </div>
+    <h2>No Transactions</h2>
+    <p>Complete a sale to see it here</p>
+    <ion-button routerLink="/tabs/pos" fill="clear" class="link-btn">
+      Go to POS <ion-icon name="arrow-forward" slot="end"></ion-icon>
     </ion-button>
   </div>
 
-  <ion-list *ngIf="!isLoading && transactions.length > 0" lines="none" class="transaction-list">
-    <div *ngFor="let transaction of transactions">
-      <ion-item
-        class="transaction-item"
-        (click)="toggleExpand(transaction.id)"
-        button
-        detail="false">
-        <div class="transaction-date-badge" slot="start">
-          <div class="day">{{ formatShortDate(transaction.createdAt) }}</div>
-          <div class="time">{{ formatTime(transaction.createdAt) }}</div>
+  <!-- Transaction List -->
+  <div *ngIf="!isLoading && transactions.length > 0" class="tx-section">
+    <div class="section-label">Completed</div>
+    <div *ngFor="let transaction of transactions; let i = index">
+      <div class="tx-card"
+           [style.animation-delay]="(i * 0.04) + 's'"
+           (click)="toggleExpand(transaction.id)">
+        <div class="tx-icon-wrap emerald">
+          <ion-icon name="checkmark-circle"></ion-icon>
         </div>
-        <ion-label>
-          <h2 class="transaction-total">₹{{ transaction.total | number:'1.2-2' }}</h2>
-          <p>{{ transaction.items.length }} item(s) · Counter: {{ transaction.counterId.substring(0, 8) }}</p>
-        </ion-label>
-        <div slot="end" class="transaction-status">
-          <ion-badge [color]="getStatusColor(transaction.status)">
-            <ion-icon [name]="getStatusIcon(transaction.status)" size="small"></ion-icon>
-            {{ transaction.status }}
-          </ion-badge>
-          <ion-icon
-            [name]="expandedId === transaction.id ? 'chevron-up' : 'chevron-down'"
-            class="expand-icon">
-          </ion-icon>
+        <div class="tx-info">
+          <div class="tx-info-top">
+            <span class="tx-total">₹{{ transaction.total | number:'1.2-2' }}</span>
+            <span *ngIf="transaction.customerName && transaction.customerName !== 'Walk-in Customer'" class="tx-customer">{{ transaction.customerName }}</span>
+          </div>
+          <span class="tx-meta">
+            {{ transaction.items.length }} items · {{ transaction.paymentMethod || 'cash' }} · {{ formatDate(transaction.createdAt) }}
+          </span>
         </div>
-      </ion-item>
+        <div class="tx-end">
+          <span class="tx-badge emerald">synced</span>
+          <ion-icon [name]="expandedId === transaction.id ? 'chevron-up-outline' : 'chevron-down-outline'"
+                    class="tx-chevron"></ion-icon>
+        </div>
+      </div>
 
-      <!-- Expanded Details -->
-      <ion-card *ngIf="expandedId === transaction.id" class="detail-card">
-        <ion-card-content>
-          <ion-list lines="full">
-            <ion-item *ngFor="let item of transaction.items" class="detail-item">
-              <ion-label>
-                <h3>{{ item.productName }}</h3>
-                <p>₹{{ item.price | number:'1.2-2' }} × {{ item.quantity }}</p>
-              </ion-label>
-              <ion-note slot="end" class="item-subtotal">
-                ₹{{ (item.price * item.quantity) | number:'1.2-2' }}
-              </ion-note>
-            </ion-item>
-          </ion-list>
-          <div class="detail-total">
-            <strong>Total: ₹{{ transaction.total | number:'1.2-2' }}</strong>
+      <!-- Expanded Details / Receipt -->
+      <div *ngIf="expandedId === transaction.id" class="tx-receipt-panel">
+        <!-- Mini Receipt -->
+        <div class="receipt" #receiptEl>
+          <div class="receipt-header">
+            <div class="receipt-logo">POS Terminal</div>
+            <div class="receipt-date">{{ formatDate(transaction.createdAt) }}</div>
+            <div class="receipt-id">{{ transaction.id }}</div>
           </div>
-          <div class="detail-meta">
-            <small>ID: {{ transaction.id.substring(0, 12) }}...</small><br>
-            <small>Date: {{ formatDate(transaction.createdAt) }}</small>
+
+          <div class="receipt-customer" *ngIf="transaction.customerName">
+            <span>Customer: {{ transaction.customerName }}</span>
+            <span *ngIf="transaction.customerPhone">Phone: {{ transaction.customerPhone }}</span>
           </div>
-        </ion-card-content>
-      </ion-card>
+
+          <div class="receipt-divider"></div>
+
+          <table class="receipt-table">
+            <thead>
+              <tr>
+                <th>Item</th>
+                <th>Qty</th>
+                <th>Price</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of transaction.items">
+                <td>{{ item.productName }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>₹{{ item.price | number:'1.2-2' }}</td>
+                <td>₹{{ (item.price * item.quantity) | number:'1.2-2' }}</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="receipt-divider"></div>
+
+          <div class="receipt-totals">
+            <div class="receipt-row">
+              <span>Subtotal</span>
+              <span>₹{{ (transaction.subtotal || transaction.total) | number:'1.2-2' }}</span>
+            </div>
+            <div class="receipt-row" *ngIf="transaction.discountAmount && transaction.discountAmount > 0">
+              <span>Discount ({{ transaction.discountPercent }}%)</span>
+              <span>-₹{{ transaction.discountAmount | number:'1.2-2' }}</span>
+            </div>
+            <div class="receipt-row" *ngIf="transaction.offerCode">
+              <span>Offer Code</span>
+              <span>{{ transaction.offerCode }}</span>
+            </div>
+            <div class="receipt-row grand">
+              <span>Total</span>
+              <span>₹{{ transaction.total | number:'1.2-2' }}</span>
+            </div>
+          </div>
+
+          <div class="receipt-divider"></div>
+
+          <div class="receipt-footer">
+            <span>Payment: {{ transaction.paymentMethod || 'Cash' | titlecase }}</span>
+            <span>Counter: {{ transaction.counterId.substring(0, 8) }}</span>
+            <span class="receipt-thank">Thank you for your purchase!</span>
+          </div>
+        </div>
+
+        <!-- Receipt Actions -->
+        <div class="receipt-actions">
+          <button class="receipt-btn" (click)="downloadReceipt(transaction)">
+            <ion-icon name="download-outline"></ion-icon>
+            Download
+          </button>
+          <button class="receipt-btn" (click)="printReceipt(transaction)">
+            <ion-icon name="print-outline"></ion-icon>
+            Print
+          </button>
+        </div>
+      </div>
     </div>
-  </ion-list>
+  </div>
 </ion-content>

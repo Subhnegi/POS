@@ -1,2 +1,101 @@
-// For information on how to create your own theme, please refer to:
-// https://ionicframework.com/docs/theming/
+// ═══════════════════════════════════════════════════════
+// POS Terminal — "Midnight Terminal" Theme
+// ═══════════════════════════════════════════════════════
+
+:root {
+  // --- Core Palette ---
+  --pos-bg-deep: #0a0e13;
+  --pos-bg-base: #0f1419;
+  --pos-bg-raised: #171d26;
+  --pos-bg-card: #1c2333;
+  --pos-bg-hover: #232b3a;
+  --pos-bg-input: #141a23;
+
+  --pos-border: #2a3444;
+  --pos-border-light: #1f2937;
+
+  --pos-text-primary: #e8edf5;
+  --pos-text-secondary: #8b99ae;
+  --pos-text-muted: #556478;
+
+  // --- Accent Colors ---
+  --pos-amber: #f59e0b;
+  --pos-amber-glow: rgba(245, 158, 11, 0.15);
+  --pos-amber-soft: #fbbf24;
+
+  --pos-emerald: #10b981;
+  --pos-emerald-glow: rgba(16, 185, 129, 0.15);
+
+  --pos-rose: #f43f5e;
+  --pos-rose-glow: rgba(244, 63, 94, 0.15);
+
+  --pos-sky: #38bdf8;
+  --pos-sky-glow: rgba(56, 189, 248, 0.15);
+
+  --pos-violet: #a78bfa;
+  --pos-violet-glow: rgba(167, 139, 250, 0.15);
+
+  // --- Typography ---
+  --font-display: 'Outfit', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
+
+  // --- Radii ---
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+
+  // --- Shadows ---
+  --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.4), 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-elevated: 0 12px 48px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.4);
+  --shadow-glow-amber: 0 0 20px rgba(245, 158, 11, 0.2);
+  --shadow-glow-emerald: 0 0 20px rgba(16, 185, 129, 0.2);
+
+  // --- Ionic Overrides ---
+  --ion-background-color: var(--pos-bg-base);
+  --ion-background-color-rgb: 15, 20, 25;
+  --ion-text-color: var(--pos-text-primary);
+  --ion-text-color-rgb: 232, 237, 245;
+
+  --ion-card-background: var(--pos-bg-card);
+  --ion-item-background: transparent;
+  --ion-border-color: var(--pos-border);
+
+  --ion-toolbar-background: var(--pos-bg-deep);
+  --ion-toolbar-color: var(--pos-text-primary);
+  --ion-tab-bar-background: var(--pos-bg-deep);
+  --ion-tab-bar-color: var(--pos-text-muted);
+  --ion-tab-bar-color-selected: var(--pos-amber);
+
+  --ion-color-primary: var(--pos-amber);
+  --ion-color-primary-rgb: 245, 158, 11;
+  --ion-color-primary-contrast: #000;
+  --ion-color-primary-shade: #d98c0a;
+  --ion-color-primary-tint: #f6a823;
+
+  --ion-color-success: var(--pos-emerald);
+  --ion-color-success-rgb: 16, 185, 129;
+  --ion-color-success-contrast: #000;
+
+  --ion-color-danger: var(--pos-rose);
+  --ion-color-danger-rgb: 244, 63, 94;
+  --ion-color-danger-contrast: #fff;
+
+  --ion-color-warning: #f59e0b;
+  --ion-color-warning-rgb: 245, 158, 11;
+  --ion-color-warning-contrast: #000;
+
+  --ion-color-medium: var(--pos-text-secondary);
+  --ion-color-medium-rgb: 139, 153, 174;
+
+  --ion-color-light: var(--pos-bg-raised);
+  --ion-color-light-rgb: 23, 29, 38;
+}
+
+// Force dark palette always (no system switch)
+@media (prefers-color-scheme: light) {
+  :root {
+    --ion-background-color: var(--pos-bg-base);
+    --ion-text-color: var(--pos-text-primary);
+  }
+}

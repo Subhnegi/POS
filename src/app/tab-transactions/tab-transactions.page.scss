@@ -1,114 +1,328 @@
-.pending-section {
-  border-left: 4px solid var(--ion-color-warning);
-  border-radius: 12px;
-  margin: 12px;
-}
+﻿// ═══ Transactions ═══
 
-.transaction-list {
-  padding: 0 4px;
-}
-
-.transaction-item {
-  --padding-start: 8px;
-  --padding-end: 8px;
-  margin: 4px 8px;
-  --background: var(--ion-card-background, #fff);
-  border-radius: 12px;
-  --border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-}
-
-.transaction-date-badge {
-  text-align: center;
-  min-width: 60px;
-  padding: 8px;
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  border-radius: 10px;
-  color: #fff;
-  margin-right: 12px;
-
-  .day {
-    font-size: 12px;
-    font-weight: 600;
-  }
-
-  .time {
-    font-size: 11px;
-    opacity: 0.85;
-  }
-}
-
-.transaction-total {
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--ion-color-success);
-}
-
-.transaction-status {
+.loading-state {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
-  gap: 4px;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px;
+  color: var(--pos-text-muted);
+  p { margin-top: 12px; font-size: 14px; }
+}
 
-  ion-badge {
-    font-size: 11px;
-    padding: 4px 8px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    gap: 4px;
+// Pending Alert
+.pending-alert {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 12px;
+  padding: 14px 16px;
+  background: var(--pos-amber-glow);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  border-radius: var(--radius-md);
+
+  .pending-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--pos-amber);
+    animation: pulse-glow 2s ease infinite;
   }
 
-  .expand-icon {
-    color: var(--ion-color-medium);
-    font-size: 18px;
+  .pending-text {
+    display: flex; flex-direction: column;
+    strong { color: var(--pos-amber); font-size: 14px; }
+    span { color: var(--pos-text-muted); font-size: 12px; }
   }
 }
 
-.detail-card {
-  margin: 0 16px 8px;
-  border-radius: 0 0 12px 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+.tx-section {
+  padding: 0 12px;
+  margin-bottom: 20px;
+}
 
-  .detail-item {
-    --padding-start: 0;
-    --padding-end: 0;
+.section-label {
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--pos-text-muted);
+  padding: 16px 4px 8px;
+}
+
+.tx-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  background: var(--pos-bg-card);
+  border: 1px solid var(--pos-border);
+  border-radius: var(--radius-md);
+  margin-bottom: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  animation: fadeInUp 0.35s ease both;
+
+  &:hover { background: var(--pos-bg-hover); }
+  &.pending { border-left: 3px solid var(--pos-amber); }
+}
+
+.tx-icon-wrap {
+  width: 40px; height: 40px;
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  ion-icon { font-size: 20px; }
+
+  &.emerald { background: var(--pos-emerald-glow); ion-icon { color: var(--pos-emerald); } }
+  &.amber { background: var(--pos-amber-glow); ion-icon { color: var(--pos-amber); } }
+}
+
+.tx-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.tx-info-top {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.tx-total {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--pos-text-primary);
+}
+
+.tx-customer {
+  font-size: 12px;
+  color: var(--pos-sky);
+  font-weight: 500;
+}
+
+.tx-meta {
+  font-size: 12px;
+  color: var(--pos-text-muted);
+  margin-top: 2px;
+}
+
+.tx-end {
+  display: flex; flex-direction: column;
+  align-items: flex-end; gap: 4px;
+  flex-shrink: 0;
+}
+
+.tx-badge {
+  font-size: 10px; font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 3px 8px;
+  border-radius: 6px;
+
+  &.emerald { background: var(--pos-emerald-glow); color: var(--pos-emerald); }
+  &.amber { background: var(--pos-amber-glow); color: var(--pos-amber); }
+}
+
+.tx-chevron {
+  font-size: 16px;
+  color: var(--pos-text-muted);
+}
+
+// ═══ Receipt Panel ═══
+.tx-receipt-panel {
+  margin: 0 0 10px;
+  animation: fadeIn 0.2s ease;
+}
+
+.receipt {
+  background: #1a1f26;
+  border: 1px solid var(--pos-border);
+  border-radius: var(--radius-md);
+  padding: 24px 20px;
+  font-family: 'DM Sans', monospace;
+  font-size: 13px;
+  color: var(--pos-text-secondary);
+}
+
+.receipt-header {
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.receipt-logo {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--pos-amber);
+  letter-spacing: 1px;
+}
+
+.receipt-date {
+  font-size: 12px;
+  color: var(--pos-text-muted);
+  margin-top: 4px;
+}
+
+.receipt-id {
+  font-size: 10px;
+  color: var(--pos-text-muted);
+  font-family: monospace;
+  margin-top: 2px;
+  word-break: break-all;
+}
+
+.receipt-customer {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 12px;
+  color: var(--pos-text-secondary);
+  margin-bottom: 12px;
+}
+
+.receipt-divider {
+  border-top: 1px dashed var(--pos-border);
+  margin: 12px 0;
+}
+
+.receipt-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  th {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--pos-text-muted);
+    text-align: left;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--pos-border);
+
+    &:nth-child(2), &:nth-child(3), &:nth-child(4) { text-align: right; }
   }
 
-  .item-subtotal {
-    font-weight: 600;
-    font-size: 14px;
-    color: var(--ion-text-color);
-  }
+  td {
+    padding: 8px 0;
+    font-size: 13px;
+    color: var(--pos-text-primary);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
 
-  .detail-total {
-    text-align: right;
-    padding: 12px 0 8px;
-    font-size: 16px;
-    border-top: 1px dashed var(--ion-border-color, #ddd);
+    &:nth-child(2), &:nth-child(3), &:nth-child(4) { text-align: right; }
+    &:first-child {
+      max-width: 120px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
   }
+}
 
-  .detail-meta {
+.receipt-totals {
+  margin-top: 4px;
+}
+
+.receipt-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 0;
+  font-size: 13px;
+
+  &.grand {
     padding-top: 8px;
-    color: var(--ion-color-medium);
+    margin-top: 4px;
+    border-top: 1px solid var(--pos-border);
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--pos-emerald);
   }
 }
 
-.empty-state {
-  margin-top: 60px;
+.receipt-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  font-size: 12px;
+  color: var(--pos-text-muted);
+  text-align: center;
+}
 
-  .empty-icon {
-    font-size: 80px;
-    color: var(--ion-color-medium);
-    opacity: 0.4;
+.receipt-thank {
+  margin-top: 6px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--pos-amber);
+}
+
+// Receipt Actions
+.receipt-actions {
+  display: flex;
+  gap: 8px;
+  padding: 12px 0 0;
+}
+
+.receipt-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px;
+  border: 1px solid var(--pos-border);
+  border-radius: var(--radius-md);
+  background: var(--pos-bg-card);
+  color: var(--pos-text-secondary);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  ion-icon { font-size: 16px; }
+  &:hover { border-color: var(--pos-amber); color: var(--pos-amber); }
+}
+
+// Empty State
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px;
+  text-align: center;
+
+  .empty-icon-wrap {
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    background: var(--pos-bg-card);
+    border: 1px solid var(--pos-border);
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 20px;
+    ion-icon { font-size: 36px; color: var(--pos-text-muted); }
   }
 
   h2 {
-    margin-top: 16px;
-    font-weight: 600;
+    font-family: var(--font-display);
+    font-size: 18px; font-weight: 600;
+    color: var(--pos-text-primary);
+    margin: 0 0 8px;
   }
 
   p {
-    color: var(--ion-color-medium);
+    color: var(--pos-text-muted);
+    font-size: 14px;
+    margin: 0 0 16px;
+  }
+
+  .link-btn {
+    --color: var(--pos-amber);
+    font-weight: 600;
   }
 }

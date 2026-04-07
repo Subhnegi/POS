@@ -24,10 +24,12 @@ export class TabHomePage implements OnInit, OnDestroy {
   todayRevenue = 0;
   pendingTransactionsCount = 0;
   lowStockProducts: Product[] = [];
+  currentTime = '';
 
   private productsSub?: Subscription;
   private transactionsSub?: Subscription;
   private networkSub?: Subscription;
+  private timeInterval: any;
 
   constructor(
     private productService: ProductService,
@@ -40,6 +42,8 @@ export class TabHomePage implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.counterLabel = this.counterService.getCounterLabel();
+    this.updateTime();
+    this.timeInterval = setInterval(() => this.updateTime(), 60000);
 
     this.networkSub = this.networkService.isOnline$.subscribe(online => {
       this.isOnline = online;
@@ -81,5 +85,12 @@ export class TabHomePage implements OnInit, OnDestroy {
     this.productsSub?.unsubscribe();
     this.transactionsSub?.unsubscribe();
     this.networkSub?.unsubscribe();
+    if (this.timeInterval) clearInterval(this.timeInterval);
+  }
+
+  private updateTime(): void {
+    const now = new Date();
+    this.currentTime = now.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }) +
+      ' · ' + now.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
   }
 }

@@ -1,5 +1,5 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { ToastController, LoadingController, AlertController } from '@ionic/angular';
+﻿import { Component, OnInit, OnDestroy } from '@angular/core';
+import { ToastController, LoadingController } from '@ionic/angular';
 import { Subscription } from 'rxjs';
 import { ProductService } from '../services/product.service';
 import { CartService } from '../services/cart.service';
@@ -24,7 +24,34 @@ export class TabPosPage implements OnInit, OnDestroy {
   searchTerm = '';
   isLoading = true;
   isOnline = true;
-  showCart = false;
+
+  // Drag & Drop
+  isDragging = false;
+  isDragOverCart = false;
+  private draggedProduct: Product | null = null;
+
+  // Checkout
+  showCheckoutModal = false;
+  showSuccessModal = false;
+  isProcessing = false;
+  lastTransaction: Transaction | null = null;
+  checkoutSubtotal = 0;
+  checkoutDiscount = 0;
+  checkoutGrandTotal = 0;
+
+  checkoutData = {
+    customerName: '',
+    customerPhone: '',
+    offerCode: '',
+    discountPercent: 0,
+    paymentMethod: 'cash'
+  };
+
+  paymentMethods = [
+    { value: 'cash', label: 'Cash', icon: 'cash-outline' },
+    { value: 'card', label: 'Card', icon: 'card-outline' },
+    { value: 'upi', label: 'UPI', icon: 'phone-portrait-outline' }
+  ];
 
   private productsSub?: Subscription;
   private cartSub?: Subscription;
@@ -38,8 +65,7 @@ export class TabPosPage implements OnInit, OnDestroy {
     private offlineStorage: OfflineStorageService,
     private counterService: CounterService,
     private toastController: ToastController,
-    private loadingController: LoadingController,
-    private alertController: AlertController
+    private loadingController: LoadingController
   ) {}
 
   ngOnInit(): void {
@@ -54,7 +80,6 @@ export class TabPosPage implements OnInit, OnDestroy {
       this.products = products;
       this.filterProducts();
       this.isLoading = false;
-      // Cache for offline
       this.offlineStorage.cacheProducts(products);
     });
 
@@ -83,13 +108,14 @@ export class TabPosPage implements OnInit, OnDestroy {
     }
   }
 
+  // ── Cart Operations ──
+
   addToCart(product: Product): void {
     if (product.stock <= 0) {
-      this.showToast('Product is out of stock', 'warning');
+      this.showToast('Out of stock', 'warning');
       return;
     }
     this.cartService.addToCart(product);
-    this.showToast(`${product.name} added to cart`, 'success');
   }
 
   removeFromCart(productId: string): void {
@@ -112,42 +138,116 @@ export class TabPosPage implements OnInit, OnDestroy {
     return this.cartService.getItemCount();
   }
 
-  toggleCart(): void {
-    this.showCart = !this.showCart;
+  clearCart(): void {
+    this.cartService.clearCart();
   }
 
-  async checkout(): Promise<void> {
-    if (this.cartItems.length === 0) {
-      await this.showToast('Cart is empty', 'warning');
+  // ── Drag & Drop ──
+
+  onDragStart(event: DragEvent, product: Product): void {
+    if (product.stock <= 0) {
+      event.preventDefault();
       return;
     }
-
-    const alert = await this.alertController.create({
-      header: 'Confirm Checkout',
-      message: `Total: ₹${this.getCartTotal().toFixed(2)}<br>Proceed with checkout?`,
-      buttons: [
-        { text: 'Cancel', role: 'cancel' },
-        {
-          text: 'Confirm',
-          handler: () => this.processCheckout()
-        }
-      ]
-    });
-    await alert.present();
+    this.draggedProduct = product;
+    this.isDragging = true;
+    event.dataTransfer?.setData('text/plain', product.id);
+    if (event.dataTransfer) {
+      event.dataTransfer.effectAllowed = 'copy';
+    }
   }
 
-  private async processCheckout(): Promise<void> {
-    const loading = await this.loadingController.create({ message: 'Processing...' });
-    await loading.present();
+  onDragEnd(event: DragEvent): void {
+    this.isDragging = false;
+    this.isDragOverCart = false;
+    this.draggedProduct = null;
+  }
+
+  onCartDragOver(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragOverCart = true;
+    if (event.dataTransfer) {
+      event.dataTransfer.dropEffect = 'copy';
+    }
+  }
+
+  onCartDragLeave(event: DragEvent): void {
+    event.preventDefault();
+    this.isDragOverCart = false;
+  }
+
+  onCartDrop(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragOverCart = false;
+    this.isDragging = false;
+
+    if (this.draggedProduct) {
+      this.addToCart(this.draggedProduct);
+      this.draggedProduct = null;
+    }
+  }
+
+  // ── Checkout ──
+
+  openCheckout(): void {
+    if (this.cartItems.length === 0) {
+      this.showToast('Cart is empty', 'warning');
+      return;
+    }
+    this.checkoutData = {
+      customerName: '',
+      customerPhone: '',
+      offerCode: '',
+      discountPercent: 0,
+      paymentMethod: 'cash'
+    };
+    this.recalcCheckout();
+    this.showCheckoutModal = true;
+  }
+
+  closeCheckout(): void {
+    this.showCheckoutModal = false;
+  }
+
+  applyOfferCode(): void {
+    const code = this.checkoutData.offerCode.trim().toUpperCase();
+    if (code === 'SAVE10') {
+      this.checkoutData.discountPercent = 10;
+    } else if (code === 'SAVE20') {
+      this.checkoutData.discountPercent = 20;
+    } else if (code === 'HALF') {
+      this.checkoutData.discountPercent = 50;
+    }
+    this.recalcCheckout();
+  }
+
+  recalcCheckout(): void {
+    this.checkoutSubtotal = this.getCartTotal();
+    const pct = Math.min(Math.max(this.checkoutData.discountPercent || 0, 0), 100);
+    this.checkoutDiscount = Math.round(this.checkoutSubtotal * pct) / 100;
+    this.checkoutGrandTotal = this.checkoutSubtotal - this.checkoutDiscount;
+  }
+
+  async processPayment(): Promise<void> {
+    this.isProcessing = true;
+
+    // Simulate payment gateway delay
+    await new Promise<void>(resolve => setTimeout(resolve, 1800));
 
     try {
       if (this.isOnline) {
-        // Online checkout - straight to Firestore
-        await this.transactionService.checkout(this.cartItems);
-        await this.showToast('Transaction completed!', 'success');
+        const tx = await this.transactionService.checkout(this.cartItems, {
+          customerName: this.checkoutData.customerName || 'Walk-in Customer',
+          customerPhone: this.checkoutData.customerPhone,
+          offerCode: this.checkoutData.offerCode,
+          discountPercent: this.checkoutData.discountPercent,
+          paymentMethod: this.checkoutData.paymentMethod
+        });
+        this.lastTransaction = tx;
       } else {
-        // Offline checkout - save locally
-        const transaction: Transaction = {
+        const offlineTx: Transaction = {
           id: this.generateOfflineId(),
           items: this.cartItems.map(item => ({
             productId: item.product.id,
@@ -155,23 +255,36 @@ export class TabPosPage implements OnInit, OnDestroy {
             quantity: item.quantity,
             price: item.product.price
           })),
-          total: this.getCartTotal(),
+          subtotal: this.checkoutSubtotal,
+          discountPercent: this.checkoutData.discountPercent,
+          discountAmount: this.checkoutDiscount,
+          total: this.checkoutGrandTotal,
+          customerName: this.checkoutData.customerName || 'Walk-in Customer',
+          customerPhone: this.checkoutData.customerPhone,
+          offerCode: this.checkoutData.offerCode,
+          paymentMethod: this.checkoutData.paymentMethod,
           counterId: this.counterService.getCounterId(),
           status: 'pending',
           createdAt: Date.now()
         };
-        await this.offlineStorage.savePendingTransaction(transaction);
-        await this.showToast('Transaction saved offline. Will sync when online.', 'warning');
+        await this.offlineStorage.savePendingTransaction(offlineTx);
+        this.lastTransaction = offlineTx;
       }
 
       this.cartService.clearCart();
-      this.showCart = false;
+      this.showCheckoutModal = false;
+      this.showSuccessModal = true;
     } catch (error) {
-      console.error('Checkout error:', error);
-      await this.showToast('Error processing transaction', 'danger');
+      console.error('Payment error:', error);
+      await this.showToast('Payment failed. Please try again.', 'danger');
     } finally {
-      await loading.dismiss();
+      this.isProcessing = false;
     }
+  }
+
+  closeSuccess(): void {
+    this.showSuccessModal = false;
+    this.lastTransaction = null;
   }
 
   private generateOfflineId(): string {
