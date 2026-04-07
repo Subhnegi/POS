@@ -1,12 +1,12 @@
 export const environment = {
   production: false,
   firebase: {
-  apiKey: "AIzaSyBKlB_11nGSaxWn1QsXIkzaICmfmSNQYHE",
-  authDomain: "pos-system-8f4be.firebaseapp.com",
-  projectId: "pos-system-8f4be",
-  storageBucket: "pos-system-8f4be.firebasestorage.app",
-  messagingSenderId: "753925701447",
-  appId: "1:753925701447:web:1750a4f4b7ededdc385662",
-  measurementId: "G-T70XPHX43W"
+    apiKey: "__FIREBASE_API_KEY__",
+    authDomain: "__FIREBASE_AUTH_DOMAIN__",
+    projectId: "__FIREBASE_PROJECT_ID__",
+    storageBucket: "__FIREBASE_STORAGE_BUCKET__",
+    messagingSenderId: "__FIREBASE_MESSAGING_SENDER_ID__",
+    appId: "__FIREBASE_APP_ID__",
+    measurementId: "__FIREBASE_MEASUREMENT_ID__"
   }
 };

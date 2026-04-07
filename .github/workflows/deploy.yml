@@ -3,12 +3,10 @@ name: Build and Deploy
 on:
   push:
     branches:
-      - gh-pages
+      - main
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
 jobs:
   build-and-deploy:
@@ -27,11 +25,22 @@ jobs:
 
       - name: Install dependencies
         working-directory: pos-app
-        run: npm ci
+        run: npm ci --legacy-peer-deps
+
+      - name: Inject Firebase environment variables
+        working-directory: pos-app
+        run: |
+          sed -i "s|__FIREBASE_API_KEY__|${{ secrets.FIREBASE_API_KEY }}|g" src/environments/environment.prod.ts
+          sed -i "s|__FIREBASE_AUTH_DOMAIN__|${{ secrets.FIREBASE_AUTH_DOMAIN }}|g" src/environments/environment.prod.ts
+          sed -i "s|__FIREBASE_PROJECT_ID__|${{ secrets.FIREBASE_PROJECT_ID }}|g" src/environments/environment.prod.ts
+          sed -i "s|__FIREBASE_STORAGE_BUCKET__|${{ secrets.FIREBASE_STORAGE_BUCKET }}|g" src/environments/environment.prod.ts
+          sed -i "s|__FIREBASE_MESSAGING_SENDER_ID__|${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}|g" src/environments/environment.prod.ts
+          sed -i "s|__FIREBASE_APP_ID__|${{ secrets.FIREBASE_APP_ID }}|g" src/environments/environment.prod.ts
+          sed -i "s|__FIREBASE_MEASUREMENT_ID__|${{ secrets.FIREBASE_MEASUREMENT_ID }}|g" src/environments/environment.prod.ts
 
       - name: Build for production
         working-directory: pos-app
-        run: npx ionic build --prod -- --base-href /POS/
+        run: npx ng build --configuration production --base-href /POS/
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
