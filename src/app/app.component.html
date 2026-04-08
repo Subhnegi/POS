@@ -1,3 +1,57 @@
 <ion-app>
-  <ion-router-outlet></ion-router-outlet>
+  <ion-menu contentId="main-content" type="overlay">
+    <ion-header>
+      <ion-toolbar>
+        <ion-title class="sidebar-title">
+          <ion-icon name="terminal-outline"></ion-icon>
+          POS Terminal
+        </ion-title>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content>
+      <ion-list lines="none" class="sidebar-nav">
+        <ion-menu-toggle auto-hide="false">
+          <ion-item routerLink="/tabs/home" routerLinkActive="active-link" routerDirection="root">
+            <ion-icon name="grid-outline" slot="start"></ion-icon>
+            <ion-label>Dashboard</ion-label>
+          </ion-item>
+        </ion-menu-toggle>
+        <ion-menu-toggle auto-hide="false">
+          <ion-item routerLink="/tabs/pos" routerLinkActive="active-link" routerDirection="root">
+            <ion-icon name="bag-handle-outline" slot="start"></ion-icon>
+            <ion-label>Point of Sale</ion-label>
+          </ion-item>
+        </ion-menu-toggle>
+        <ion-menu-toggle auto-hide="false">
+          <ion-item routerLink="/tabs/inventory" routerLinkActive="active-link" routerDirection="root">
+            <ion-icon name="cube-outline" slot="start"></ion-icon>
+            <ion-label>Inventory</ion-label>
+          </ion-item>
+        </ion-menu-toggle>
+        <ion-menu-toggle auto-hide="false">
+          <ion-item routerLink="/tabs/transactions" routerLinkActive="active-link" routerDirection="root">
+            <ion-icon name="receipt-outline" slot="start"></ion-icon>
+            <ion-label>Transactions</ion-label>
+          </ion-item>
+        </ion-menu-toggle>
+        <ion-menu-toggle auto-hide="false">
+          <ion-item routerLink="/tabs/reports" routerLinkActive="active-link" routerDirection="root">
+            <ion-icon name="analytics-outline" slot="start"></ion-icon>
+            <ion-label>Reports</ion-label>
+          </ion-item>
+        </ion-menu-toggle>
+
+        <div class="sidebar-divider"></div>
+
+        <ion-menu-toggle auto-hide="false">
+          <ion-item routerLink="/tabs/customers" routerLinkActive="active-link" routerDirection="root">
+            <ion-icon name="people-outline" slot="start"></ion-icon>
+            <ion-label>Customers</ion-label>
+          </ion-item>
+        </ion-menu-toggle>
+      </ion-list>
+    </ion-content>
+  </ion-menu>
+
+  <ion-router-outlet id="main-content"></ion-router-outlet>
 </ion-app>

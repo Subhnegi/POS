@@ -1,37 +1,4 @@
-﻿// ═══ Inventory ═══
-
-// Category Filter Pills
-.category-pills {
-  display: flex;
-  gap: 8px;
-  padding: 12px 12px 4px;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-
-  &::-webkit-scrollbar { display: none; }
-}
-
-.cat-pill {
-  padding: 6px 16px;
-  border: 1px solid var(--pos-border);
-  border-radius: 100px;
-  background: transparent;
-  color: var(--pos-text-secondary);
-  font-family: var(--font-display);
-  font-size: 13px;
-  font-weight: 600;
-  white-space: nowrap;
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  &:hover { border-color: var(--pos-text-muted); }
-
-  &.active {
-    background: var(--pos-amber);
-    color: #000;
-    border-color: var(--pos-amber);
-  }
-}
+// ═══ Customers ═══
 
 .loading-state {
   display: flex;
@@ -40,7 +7,6 @@
   justify-content: center;
   padding: 80px 20px;
   color: var(--pos-text-muted);
-
   p { margin-top: 12px; font-size: 14px; }
 }
 
@@ -99,72 +65,10 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
-
     ion-icon { font-size: 18px; }
   }
 }
 
-// Image Drop Zone
-.image-drop-zone {
-  width: 100%;
-  height: 160px;
-  border: 2px dashed var(--pos-border);
-  border-radius: var(--radius-lg);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  overflow: hidden;
-  transition: all 0.2s ease;
-  margin-bottom: 8px;
-  background: var(--pos-bg-input);
-
-  &:hover { border-color: var(--pos-text-muted); }
-  &.drag-over {
-    border-color: var(--pos-amber);
-    background: var(--pos-amber-glow);
-  }
-  &.has-image {
-    border-style: solid;
-    border-color: var(--pos-border);
-
-    img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-  }
-
-  .drop-placeholder {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
-    color: var(--pos-text-muted);
-
-    ion-icon { font-size: 36px; color: var(--pos-text-muted); }
-    span { font-size: 13px; font-weight: 500; }
-    small { font-size: 11px; opacity: 0.6; }
-  }
-}
-
-.remove-img-btn {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 6px 12px;
-  border: none;
-  background: transparent;
-  color: var(--pos-rose);
-  font-family: var(--font-body);
-  font-size: 12px;
-  cursor: pointer;
-  margin-bottom: 8px;
-
-  ion-icon { font-size: 14px; }
-}
-
-// Form Fields
 .form-fields {
   display: flex;
   flex-direction: column;
@@ -190,7 +94,7 @@
     margin-bottom: 6px;
   }
 
-  input {
+  input, textarea {
     width: 100%;
     padding: 12px 14px;
     border: 1px solid var(--pos-border);
@@ -201,13 +105,13 @@
     font-size: 15px;
     outline: none;
     transition: border-color 0.2s ease;
+    resize: vertical;
 
     &:focus { border-color: var(--pos-amber); }
     &::placeholder { color: var(--pos-text-muted); }
   }
 }
 
-// Buttons
 .btn-primary {
   display: flex;
   align-items: center;
@@ -224,9 +128,7 @@
   font-size: 15px;
   cursor: pointer;
   transition: all 0.2s ease;
-
   &:hover { opacity: 0.9; box-shadow: var(--shadow-glow-amber); }
-
   ion-icon { font-size: 18px; }
 }
 
@@ -242,7 +144,6 @@
   font-size: 14px;
   cursor: pointer;
   transition: all 0.2s ease;
-
   &:hover { border-color: var(--pos-text-muted); color: var(--pos-text-primary); }
 }
 
@@ -252,19 +153,19 @@
   gap: 10px;
 }
 
-// Product List
-.product-list {
+// Customer List
+.customer-list {
   padding: 12px;
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.inv-product-card {
+.customer-card {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px 14px;
+  padding: 14px;
   background: var(--pos-bg-card);
   border: 1px solid var(--pos-border);
   border-radius: var(--radius-md);
@@ -274,21 +175,33 @@
   &:hover { background: var(--pos-bg-hover); }
 }
 
-.inv-img {
-  width: 48px;
-  height: 48px;
-  aspect-ratio: 1;
-  border-radius: 12px;
+.customer-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 18px;
+  color: #fff;
   flex-shrink: 0;
+
+  &.avatar-0 { background: var(--pos-amber); }
+  &.avatar-1 { background: var(--pos-emerald); }
+  &.avatar-2 { background: var(--pos-sky); }
+  &.avatar-3 { background: var(--pos-violet); }
+  &.avatar-4 { background: var(--pos-rose); }
 }
 
-.inv-info {
+.customer-info {
   flex: 1;
   display: flex;
   flex-direction: column;
   min-width: 0;
 
-  .inv-name {
+  .customer-name {
     font-family: var(--font-display);
     font-weight: 600;
     font-size: 15px;
@@ -298,54 +211,37 @@
     text-overflow: ellipsis;
   }
 
-  .inv-category {
-    font-size: 11px;
-    font-weight: 500;
-    color: var(--pos-sky);
-    background: var(--pos-sky-glow);
-    padding: 1px 8px;
-    border-radius: 100px;
-    align-self: flex-start;
-  }
-
-  .inv-price {
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--pos-emerald);
-  }
-
-  .inv-cost {
-    font-size: 11px;
+  .customer-detail {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
     color: var(--pos-text-muted);
+
+    ion-icon { font-size: 12px; }
   }
 }
 
-.inv-stock {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
+.customer-stats {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 14px;
-  background: var(--pos-emerald-glow);
-  color: var(--pos-emerald);
+  flex-direction: column;
+  align-items: flex-end;
   flex-shrink: 0;
 
-  &.warning {
-    background: var(--pos-amber-glow);
-    color: var(--pos-amber);
+  .stat-purchases {
+    font-size: 12px;
+    color: var(--pos-text-muted);
   }
 
-  &.danger {
-    background: var(--pos-rose-glow);
-    color: var(--pos-rose);
+  .stat-spent {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--pos-emerald);
   }
 }
 
-.inv-actions {
+.customer-actions {
   display: flex;
   gap: 4px;
   flex-shrink: 0;
@@ -363,7 +259,6 @@
   justify-content: center;
   cursor: pointer;
   transition: all 0.2s ease;
-
   ion-icon { font-size: 16px; }
 
   &:hover {
@@ -399,7 +294,6 @@
     align-items: center;
     justify-content: center;
     margin-bottom: 20px;
-
     ion-icon { font-size: 36px; color: var(--pos-text-muted); }
   }
 
@@ -418,7 +312,6 @@
   }
 }
 
-// FAB
 .fab-add {
   --background: var(--pos-amber);
   --color: #000;

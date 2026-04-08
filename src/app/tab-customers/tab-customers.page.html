@@ -1,0 +1,133 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Customers</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="openAddForm()" class="header-add-btn">
+        <ion-icon name="add" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+  <ion-toolbar>
+    <ion-searchbar
+      [(ngModel)]="searchTerm"
+      (ionInput)="filterCustomers()"
+      placeholder="Search customers..."
+      debounce="300"
+      animated="true">
+    </ion-searchbar>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <!-- Loading -->
+  <div *ngIf="isLoading" class="loading-state">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p>Loading customers...</p>
+  </div>
+
+  <!-- Add/Edit Form -->
+  <div *ngIf="showForm" class="form-overlay" (click)="cancelForm()">
+    <div class="form-panel" (click)="$event.stopPropagation()">
+      <div class="form-header">
+        <h2>{{ isEditing ? 'Edit Customer' : 'New Customer' }}</h2>
+        <button class="form-close" (click)="cancelForm()">
+          <ion-icon name="close"></ion-icon>
+        </button>
+      </div>
+
+      <div class="form-fields">
+        <div class="field-group">
+          <label>Customer Name *</label>
+          <input type="text" [(ngModel)]="formCustomer.name" placeholder="e.g. John Doe" />
+        </div>
+        <div class="field-row">
+          <div class="field-group">
+            <label>Phone</label>
+            <input type="tel" [(ngModel)]="formCustomer.phone" placeholder="+91 98765 43210" />
+          </div>
+          <div class="field-group">
+            <label>Email</label>
+            <input type="email" [(ngModel)]="formCustomer.email" placeholder="john@example.com" />
+          </div>
+        </div>
+        <div class="field-group">
+          <label>Address</label>
+          <input type="text" [(ngModel)]="formCustomer.address" placeholder="Street, City" />
+        </div>
+        <div class="field-group">
+          <label>Notes</label>
+          <textarea [(ngModel)]="formCustomer.notes" placeholder="Additional notes..." rows="3"></textarea>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button class="btn-primary" (click)="saveCustomer()">
+          <ion-icon [name]="isEditing ? 'checkmark' : 'add'"></ion-icon>
+          {{ isEditing ? 'Update Customer' : 'Add Customer' }}
+        </button>
+        <button class="btn-ghost" (click)="cancelForm()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!isLoading && customers.length === 0" class="empty-state">
+    <div class="empty-icon-wrap">
+      <ion-icon name="people-outline"></ion-icon>
+    </div>
+    <h2>No Customers Yet</h2>
+    <p>Add your first customer to get started</p>
+    <button class="btn-primary" (click)="openAddForm()">
+      <ion-icon name="add"></ion-icon>
+      Add Customer
+    </button>
+  </div>
+
+  <!-- Customer List -->
+  <div *ngIf="!isLoading && filteredCustomers.length > 0" class="customer-list">
+    <div *ngFor="let customer of filteredCustomers; let i = index"
+         class="customer-card"
+         [style.animation-delay]="(i * 0.04) + 's'">
+      <div class="customer-avatar" [ngClass]="'avatar-' + (customer.name.charCodeAt(0) % 5)">
+        {{ customer.name.charAt(0).toUpperCase() }}
+      </div>
+      <div class="customer-info">
+        <span class="customer-name">{{ customer.name }}</span>
+        <span class="customer-detail" *ngIf="customer.phone">
+          <ion-icon name="call-outline"></ion-icon> {{ customer.phone }}
+        </span>
+        <span class="customer-detail" *ngIf="customer.email">
+          <ion-icon name="mail-outline"></ion-icon> {{ customer.email }}
+        </span>
+      </div>
+      <div class="customer-stats">
+        <span class="stat-purchases">{{ customer.totalPurchases }} orders</span>
+        <span class="stat-spent">₹{{ customer.totalSpent | number:'1.0-0' }}</span>
+      </div>
+      <div class="customer-actions">
+        <button class="icon-btn" (click)="openEditForm(customer)">
+          <ion-icon name="create-outline"></ion-icon>
+        </button>
+        <button class="icon-btn danger" (click)="confirmDelete(customer)">
+          <ion-icon name="trash-outline"></ion-icon>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- No search results -->
+  <div *ngIf="!isLoading && customers.length > 0 && filteredCustomers.length === 0" class="empty-state">
+    <ion-icon name="search-outline" style="font-size: 48px; color: var(--pos-text-muted);"></ion-icon>
+    <p>No customers match "{{ searchTerm }}"</p>
+  </div>
+
+  <!-- FAB -->
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button (click)="openAddForm()" class="fab-add">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+</ion-content>

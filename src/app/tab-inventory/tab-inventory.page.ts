@@ -14,6 +14,8 @@ export class TabInventoryPage implements OnInit, OnDestroy {
   products: Product[] = [];
   filteredProducts: Product[] = [];
   searchTerm = '';
+  selectedCategory = '';
+  categories: string[] = [];
   isLoading = true;
   private productsSub?: Subscription;
 
@@ -21,7 +23,7 @@ export class TabInventoryPage implements OnInit, OnDestroy {
   showForm = false;
   isEditing = false;
   editingProductId = '';
-  formProduct = { name: '', costPrice: 0, sellingPrice: 0, stock: 0, imageUrl: '' };
+  formProduct = { name: '', category: '', costPrice: 0, sellingPrice: 0, stock: 0, imageUrl: '' };
   isDraggingImage = false;
 
   constructor(
@@ -34,24 +36,31 @@ export class TabInventoryPage implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.productsSub = this.productService.getProducts().subscribe(products => {
       this.products = products;
+      this.categories = [...new Set(products.map(p => p.category).filter(c => c))];
       this.filterProducts();
       this.isLoading = false;
     });
   }
 
   filterProducts(): void {
-    if (!this.searchTerm.trim()) {
-      this.filteredProducts = [...this.products];
-    } else {
-      const term = this.searchTerm.toLowerCase();
-      this.filteredProducts = this.products.filter(p =>
-        p.name.toLowerCase().includes(term)
-      );
+    let result = [...this.products];
+    if (this.selectedCategory) {
+      result = result.filter(p => p.category === this.selectedCategory);
     }
+    if (this.searchTerm.trim()) {
+      const term = this.searchTerm.toLowerCase();
+      result = result.filter(p => p.name.toLowerCase().includes(term));
+    }
+    this.filteredProducts = result;
+  }
+
+  setCategory(cat: string): void {
+    this.selectedCategory = this.selectedCategory === cat ? '' : cat;
+    this.filterProducts();
   }
 
   openAddForm(): void {
-    this.formProduct = { name: '', costPrice: 0, sellingPrice: 0, stock: 0, imageUrl: '' };
+    this.formProduct = { name: '', category: '', costPrice: 0, sellingPrice: 0, stock: 0, imageUrl: '' };
     this.isEditing = false;
     this.editingProductId = '';
     this.showForm = true;
@@ -60,6 +69,7 @@ export class TabInventoryPage implements OnInit, OnDestroy {
   openEditForm(product: Product): void {
     this.formProduct = {
       name: product.name,
+      category: product.category || '',
       costPrice: product.costPrice,
       sellingPrice: product.sellingPrice,
       stock: product.stock,
@@ -72,7 +82,7 @@ export class TabInventoryPage implements OnInit, OnDestroy {
 
   cancelForm(): void {
     this.showForm = false;
-    this.formProduct = { name: '', costPrice: 0, sellingPrice: 0, stock: 0, imageUrl: '' };
+    this.formProduct = { name: '', category: '', costPrice: 0, sellingPrice: 0, stock: 0, imageUrl: '' };
   }
 
   onDragOver(event: DragEvent): void {

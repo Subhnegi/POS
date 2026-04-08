@@ -1,5 +1,8 @@
 ﻿<ion-header>
   <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
     <ion-title>Dashboard</ion-title>
     <ion-buttons slot="end">
       <button class="theme-toggle-btn" (click)="toggleTheme()">
@@ -14,6 +17,18 @@
 </ion-header>
 
 <ion-content [fullscreen]="true" class="ion-padding">
+
+  <!-- Quick Actions (top) -->
+  <div class="quick-actions">
+    <button class="action-btn action-sale" routerLink="/tabs/pos">
+      <ion-icon name="cart"></ion-icon>
+      <span>New Sale</span>
+    </button>
+    <button class="action-btn action-product" routerLink="/tabs/inventory">
+      <ion-icon name="add-circle"></ion-icon>
+      <span>Add Product</span>
+    </button>
+  </div>
 
   <!-- Counter Badge -->
   <div class="counter-strip">
@@ -61,8 +76,48 @@
         <ion-icon name="trending-up"></ion-icon>
       </div>
       <div class="stat-info">
-        <span class="stat-value">{{ todayRevenue | number:'1.0-0' }}</span>
+        <span class="stat-value">₹{{ todayRevenue | number:'1.0-0' }}</span>
         <span class="stat-label">Today Revenue</span>
+      </div>
+    </div>
+
+    <div class="stat-tile" style="animation-delay: 0.2s">
+      <div class="stat-icon-wrap sky">
+        <ion-icon name="bag-check"></ion-icon>
+      </div>
+      <div class="stat-info">
+        <span class="stat-value">{{ todayOrders }}</span>
+        <span class="stat-label">Today Orders</span>
+      </div>
+    </div>
+
+    <div class="stat-tile" style="animation-delay: 0.25s">
+      <div class="stat-icon-wrap amber">
+        <ion-icon name="pricetag"></ion-icon>
+      </div>
+      <div class="stat-info">
+        <span class="stat-value">₹{{ avgOrderValue | number:'1.0-0' }}</span>
+        <span class="stat-label">Avg. Order</span>
+      </div>
+    </div>
+
+    <div class="stat-tile" style="animation-delay: 0.3s">
+      <div class="stat-icon-wrap emerald">
+        <ion-icon name="cash"></ion-icon>
+      </div>
+      <div class="stat-info">
+        <span class="stat-value">₹{{ todayProfit | number:'1.0-0' }}</span>
+        <span class="stat-label">Today Profit</span>
+      </div>
+    </div>
+
+    <div class="stat-tile" style="animation-delay: 0.35s">
+      <div class="stat-icon-wrap violet">
+        <ion-icon name="star"></ion-icon>
+      </div>
+      <div class="stat-info">
+        <span class="stat-value stat-value-sm">{{ topSellingProduct }}</span>
+        <span class="stat-label">Top Seller</span>
       </div>
     </div>
   </div>
@@ -104,18 +159,6 @@
         </div>
       </div>
     </div>
-  </div>
-
-  <!-- Quick Actions -->
-  <div class="quick-actions">
-    <button class="action-btn action-sale" routerLink="/tabs/pos">
-      <ion-icon name="cart"></ion-icon>
-      <span>New Sale</span>
-    </button>
-    <button class="action-btn action-product" routerLink="/tabs/inventory">
-      <ion-icon name="add-circle"></ion-icon>
-      <span>Add Product</span>
-    </button>
   </div>
 
 </ion-content>

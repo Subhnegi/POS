@@ -1,5 +1,8 @@
 <ion-header>
   <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
     <ion-title>Reports</ion-title>
   </ion-toolbar>
 </ion-header>
@@ -23,6 +26,10 @@
       <ion-icon name="cash-outline"></ion-icon>
       <span>Profit/Loss</span>
     </button>
+    <button class="rtab" [class.active]="activeTab === 'popular'" (click)="setTab('popular')">
+      <ion-icon name="star-outline"></ion-icon>
+      <span>Popular</span>
+    </button>
   </div>
 
   <!-- Period Selector (not for stock) -->
@@ -33,6 +40,14 @@
             (click)="setPeriod($any(p))">
       {{ p | titlecase }}
     </button>
+    <div class="export-btns">
+      <button class="export-btn" (click)="downloadCSV()">
+        <ion-icon name="document-outline"></ion-icon> CSV
+      </button>
+      <button class="export-btn" (click)="downloadPDF()">
+        <ion-icon name="print-outline"></ion-icon> PDF
+      </button>
+    </div>
   </div>
 
   <!-- ═══ SALES REPORT ═══ -->
@@ -163,6 +178,33 @@
       <h3>Revenue vs Cost vs Profit</h3>
       <div class="chart-wrap chart-wrap-lg">
         <canvas #profitChart></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ POPULAR PRODUCTS REPORT ═══ -->
+  <div *ngIf="activeTab === 'popular'" class="report-content">
+    <div class="chart-card" *ngIf="popularProducts.length > 0">
+      <h3>Top Selling Products</h3>
+      <div class="chart-wrap">
+        <canvas #popularChart></canvas>
+      </div>
+    </div>
+    <div *ngIf="popularProducts.length > 0" class="popular-list">
+      <div class="popular-header">
+        <span class="pop-rank">#</span>
+        <span class="pop-name">Product</span>
+        <span class="pop-units">Units</span>
+        <span class="pop-revenue">Revenue</span>
+      </div>
+      <div *ngFor="let p of popularProducts; let i = index" class="popular-row">
+        <span class="pop-rank">{{ i + 1 }}</span>
+        <div class="pop-name-wrap">
+          <span class="pop-name">{{ p.name }}</span>
+          <span class="pop-cat" *ngIf="p.category">{{ p.category }}</span>
+        </div>
+        <span class="pop-units">{{ p.unitsSold }}</span>
+        <span class="pop-revenue">₹{{ p.revenue | number:'1.2-2' }}</span>
       </div>
     </div>
   </div>

@@ -1,5 +1,8 @@
 ﻿<ion-header>
   <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
     <ion-title>Inventory</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="openAddForm()" class="header-add-btn">
@@ -19,6 +22,13 @@
 </ion-header>
 
 <ion-content [fullscreen]="true">
+  <!-- Category Filter -->
+  <div *ngIf="categories.length > 0" class="category-pills">
+    <button class="cat-pill" [class.active]="!selectedCategory" (click)="setCategory('')">All</button>
+    <button *ngFor="let cat of categories" class="cat-pill"
+            [class.active]="selectedCategory === cat"
+            (click)="setCategory(cat)">{{ cat }}</button>
+  </div>
   <!-- Loading -->
   <div *ngIf="isLoading" class="loading-state">
     <ion-spinner name="crescent"></ion-spinner>
@@ -59,6 +69,13 @@
         <div class="field-group">
           <label>Product Name</label>
           <input type="text" [(ngModel)]="formProduct.name" placeholder="e.g. Espresso Shot" />
+        </div>
+        <div class="field-group">
+          <label>Category</label>
+          <input type="text" [(ngModel)]="formProduct.category" placeholder="e.g. Beverages, Food, Electronics" list="categoryList" />
+          <datalist id="categoryList">
+            <option *ngFor="let cat of categories" [value]="cat"></option>
+          </datalist>
         </div>
         <div class="field-row">
           <div class="field-group">
@@ -110,6 +127,7 @@
       </div>
       <div class="inv-info">
         <span class="inv-name">{{ product.name }}</span>
+        <span class="inv-category" *ngIf="product.category">{{ product.category }}</span>
         <span class="inv-price">₹{{ product.sellingPrice | number:'1.2-2' }}</span>
         <span class="inv-cost">Cost: ₹{{ product.costPrice | number:'1.2-2' }}</span>
       </div>

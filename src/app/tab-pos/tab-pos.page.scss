@@ -20,6 +20,60 @@
   flex-shrink: 0;
 }
 
+// Category Pills
+.pos-category-pills {
+  display: flex;
+  gap: 6px;
+  padding: 4px 12px;
+  overflow-x: auto;
+  flex-shrink: 0;
+  -webkit-overflow-scrolling: touch;
+  &::-webkit-scrollbar { display: none; }
+}
+
+.cat-pill {
+  padding: 4px 14px;
+  border: 1px solid var(--pos-border);
+  border-radius: 100px;
+  background: transparent;
+  color: var(--pos-text-secondary);
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  &:hover { border-color: var(--pos-text-muted); }
+  &.active {
+    background: var(--pos-amber);
+    color: #000;
+    border-color: var(--pos-amber);
+  }
+}
+
+// Filter Bar
+.pos-filter-bar {
+  display: flex;
+  gap: 8px;
+  padding: 4px 12px 6px;
+  flex-shrink: 0;
+}
+
+.filter-select {
+  flex: 1;
+  padding: 6px 10px;
+  border: 1px solid var(--pos-border);
+  border-radius: var(--radius-sm);
+  background: var(--pos-bg-input);
+  color: var(--pos-text-secondary);
+  font-family: var(--font-body);
+  font-size: 12px;
+  outline: none;
+  cursor: pointer;
+  &:focus { border-color: var(--pos-amber); }
+  option { background: var(--pos-bg-raised); color: var(--pos-text-primary); }
+}
+
 .product-scroll {
   flex: 1;
   overflow-y: auto;

@@ -7,7 +7,7 @@ import { Product } from '../models/product.model';
 import { Transaction } from '../models/transaction.model';
 
 type Period = 'day' | 'week' | 'month' | 'year';
-type ReportTab = 'sales' | 'stock' | 'transactions' | 'profit';
+type ReportTab = 'sales' | 'stock' | 'transactions' | 'profit' | 'popular';
 
 @Component({
   selector: 'app-tab-reports',
@@ -45,12 +45,16 @@ export class TabReportsPage implements OnInit, OnDestroy, AfterViewInit {
   profitMargin = 0;
   totalDiscountGiven = 0;
 
+  // Popular Products
+  popularProducts: { name: string; category: string; unitsSold: number; revenue: number }[] = [];
+
   @ViewChild('salesChart') salesChartRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('stockBarChart') stockBarChartRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('stockDoughnutChart') stockDoughnutChartRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('txLineChart') txLineChartRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('paymentDoughnutChart') paymentDoughnutChartRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('profitChart') profitChartRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('popularChart') popularChartRef!: ElementRef<HTMLCanvasElement>;
 
   private productsSub?: Subscription;
   private transactionsSub?: Subscription;
@@ -102,6 +106,7 @@ export class TabReportsPage implements OnInit, OnDestroy, AfterViewInit {
       case 'stock': this.buildStockReport(); break;
       case 'transactions': this.buildTransactionsReport(); break;
       case 'profit': this.buildProfitReport(); break;
+      case 'popular': this.buildPopularReport(); break;
     }
   }
 
@@ -323,6 +328,116 @@ export class TabReportsPage implements OnInit, OnDestroy, AfterViewInit {
       },
       options: this.getBarOptions('Amount (₹)')
     });
+  }
+
+  // ═══════ POPULAR PRODUCTS REPORT ═══════
+  private buildPopularReport(): void {
+    const filtered = this.filterByPeriod();
+    const productMap = new Map<string, { name: string; category: string; unitsSold: number; revenue: number }>();
+
+    filtered.forEach(tx => {
+      tx.items.forEach(item => {
+        const existing = productMap.get(item.productId) || {
+          name: item.productName,
+          category: (item as any).category || '',
+          unitsSold: 0,
+          revenue: 0
+        };
+        existing.unitsSold += item.quantity;
+        existing.revenue += item.price * item.quantity;
+        productMap.set(item.productId, existing);
+      });
+    });
+
+    this.popularProducts = Array.from(productMap.values())
+      .sort((a, b) => b.unitsSold - a.unitsSold)
+      .slice(0, 10);
+
+    const top = this.popularProducts.slice(0, 8);
+    this.renderChart('popular', this.popularChartRef, {
+      type: 'bar',
+      data: {
+        labels: top.map(p => p.name.length > 12 ? p.name.substring(0, 12) + '…' : p.name),
+        datasets: [{
+          data: top.map(p => p.unitsSold),
+          label: 'Units Sold',
+          backgroundColor: 'rgba(167, 139, 250, 0.6)',
+          borderColor: '#a78bfa',
+          borderWidth: 2,
+          borderRadius: 6,
+        }]
+      },
+      options: this.getBarOptions('Units Sold')
+    });
+  }
+
+  // ═══════ EXPORT ═══════
+  downloadCSV(): void {
+    const filtered = this.filterByPeriod();
+    const headers = ['Date', 'Transaction ID', 'Customer', 'Items', 'Subtotal', 'Discount', 'Total', 'Payment Method'];
+    const rows = filtered.map(tx => [
+      new Date(tx.createdAt).toLocaleString(),
+      tx.id,
+      tx.customerName || 'Walk-in',
+      tx.items.map(i => `${i.productName} x${i.quantity}`).join('; '),
+      tx.subtotal?.toFixed(2) || tx.total.toFixed(2),
+      tx.discountAmount?.toFixed(2) || '0.00',
+      tx.total.toFixed(2),
+      tx.paymentMethod || 'cash'
+    ]);
+
+    const csv = [headers.join(','), ...rows.map(r => r.map(v => `"${v}"`).join(','))].join('\n');
+    this.downloadFile(csv, `report-${this.activeTab}-${this.activePeriod}.csv`, 'text/csv');
+  }
+
+  downloadPDF(): void {
+    const filtered = this.filterByPeriod();
+    const html = this.buildReportHtml(filtered);
+    const printWindow = window.open('', '_blank', 'width=800,height=600');
+    if (printWindow) {
+      printWindow.document.write(html);
+      printWindow.document.close();
+      printWindow.focus();
+      printWindow.print();
+    }
+  }
+
+  private buildReportHtml(transactions: Transaction[]): string {
+    const itemsHtml = transactions.map(tx => `
+      <tr>
+        <td style="padding:6px 8px;border-bottom:1px solid #eee;font-size:12px">${new Date(tx.createdAt).toLocaleDateString()}</td>
+        <td style="padding:6px 8px;border-bottom:1px solid #eee;font-size:12px">${tx.customerName || 'Walk-in'}</td>
+        <td style="padding:6px 8px;border-bottom:1px solid #eee;font-size:12px">${tx.items.length}</td>
+        <td style="padding:6px 8px;border-bottom:1px solid #eee;font-size:12px;text-align:right">&#8377;${tx.total.toFixed(2)}</td>
+        <td style="padding:6px 8px;border-bottom:1px solid #eee;font-size:12px">${tx.paymentMethod || 'cash'}</td>
+      </tr>`).join('');
+
+    const total = transactions.reduce((s, t) => s + t.total, 0);
+
+    return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Report - ${this.activeTab}</title>
+<style>body{font-family:'Segoe UI',sans-serif;max-width:800px;margin:20px auto;color:#1a1a1a;padding:20px}
+h1{font-size:20px;color:#f59e0b;margin-bottom:4px}table{width:100%;border-collapse:collapse;margin-top:16px}
+th{font-size:11px;text-transform:uppercase;color:#888;text-align:left;padding:8px;border-bottom:2px solid #ddd}
+.summary{margin-top:16px;font-size:14px;font-weight:600}
+@media print{body{margin:0;padding:10px}}</style></head><body>
+<h1>POS Terminal — ${this.activeTab.charAt(0).toUpperCase() + this.activeTab.slice(1)} Report</h1>
+<p style="color:#888;font-size:13px">Period: ${this.activePeriod} · Generated: ${new Date().toLocaleString()}</p>
+<table><thead><tr><th>Date</th><th>Customer</th><th>Items</th><th style="text-align:right">Total</th><th>Payment</th></tr></thead>
+<tbody>${itemsHtml}</tbody></table>
+<div class="summary">Total: &#8377;${total.toFixed(2)} · ${transactions.length} transactions</div>
+</body></html>`;
+  }
+
+  private downloadFile(content: string, filename: string, type: string): void {
+    const blob = new Blob([content], { type });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   }
 
   // ═══════ PERIOD HELPERS ═══════

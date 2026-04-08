@@ -46,6 +46,18 @@ jobs:
           sed -i "s|__FIREBASE_APP_ID__|${{ secrets.FIREBASE_APP_ID }}|g" src/environments/environment.prod.ts
           sed -i "s|__FIREBASE_MEASUREMENT_ID__|${{ secrets.FIREBASE_MEASUREMENT_ID }}|g" src/environments/environment.prod.ts
 
+      - name: Prepare version tag
+        id: version
+        run: |
+          SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          TAG="v${PKG_VERSION}-${SHORT_SHA}"
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+
+      - name: Inject app version into environment
+        run: |
+          sed -i "s|__APP_VERSION__|${{ steps.version.outputs.tag }}|g" src/environments/environment.prod.ts
+
       - name: Build web app
         run: npx ng build --configuration production
 
@@ -64,9 +76,8 @@ jobs:
       - name: Prepare release info
         id: info
         run: |
-          SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
-          TAG="v$(date +'%Y.%m.%d')-${SHORT_SHA}"
-          APK="pos-app-debug-${SHORT_SHA}.apk"
+          TAG="${{ steps.version.outputs.tag }}"
+          APK="pos-app-${TAG}.apk"
           cp android/app/build/outputs/apk/debug/app-debug.apk "$APK"
           echo "tag=$TAG" >> $GITHUB_OUTPUT
           echo "apk=$APK" >> $GITHUB_OUTPUT

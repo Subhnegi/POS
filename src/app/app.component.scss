@@ -1,0 +1,71 @@
+// ═══ Sidebar Menu ═══
+
+ion-menu {
+  --background: var(--pos-bg-deep);
+  --width: 260px;
+
+  ion-toolbar {
+    --background: var(--pos-bg-deep);
+    --border-width: 0;
+  }
+
+  .sidebar-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 18px;
+    color: var(--pos-amber);
+
+    ion-icon {
+      font-size: 22px;
+    }
+  }
+
+  .sidebar-nav {
+    background: transparent;
+    padding: 8px 12px;
+
+    ion-item {
+      --background: transparent;
+      --color: var(--pos-text-secondary);
+      --padding-start: 16px;
+      --inner-padding-end: 16px;
+      --min-height: 48px;
+      border-radius: var(--radius-md);
+      margin-bottom: 4px;
+      font-family: var(--font-body);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      ion-icon {
+        color: var(--pos-text-muted);
+        font-size: 20px;
+        margin-right: 12px;
+        transition: color 0.2s ease;
+      }
+
+      &:hover {
+        --background: var(--pos-bg-hover);
+      }
+
+      &.active-link {
+        --background: var(--pos-amber-glow);
+        --color: var(--pos-amber);
+
+        ion-icon {
+          color: var(--pos-amber);
+        }
+      }
+    }
+  }
+
+  .sidebar-divider {
+    height: 1px;
+    background: var(--pos-border);
+    margin: 12px 16px;
+  }
+}

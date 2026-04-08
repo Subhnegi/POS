@@ -1,10 +1,37 @@
 ﻿<ion-header>
   <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
     <ion-title>Transactions</ion-title>
+  </ion-toolbar>
+  <ion-toolbar>
+    <ion-searchbar
+      [(ngModel)]="searchTerm"
+      (ionInput)="applyFilters()"
+      placeholder="Search transactions..."
+      debounce="300"
+      animated="true">
+    </ion-searchbar>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
+  <!-- Filters -->
+  <div class="tx-filter-bar">
+    <select class="filter-select" [(ngModel)]="filterDateRange" (ngModelChange)="applyFilters()">
+      <option value="all">All Time</option>
+      <option value="today">Today</option>
+      <option value="week">This Week</option>
+      <option value="month">This Month</option>
+    </select>
+    <select class="filter-select" [(ngModel)]="filterPayment" (ngModelChange)="applyFilters()">
+      <option value="">All Payments</option>
+      <option value="cash">Cash</option>
+      <option value="card">Card</option>
+      <option value="upi">UPI</option>
+    </select>
+  </div>
   <!-- Loading -->
   <div *ngIf="isLoading" class="loading-state">
     <ion-spinner name="crescent"></ion-spinner>
@@ -48,9 +75,9 @@
   </div>
 
   <!-- Transaction List -->
-  <div *ngIf="!isLoading && transactions.length > 0" class="tx-section">
-    <div class="section-label">Completed</div>
-    <div *ngFor="let transaction of transactions; let i = index">
+  <div *ngIf="!isLoading && filteredTransactions.length > 0" class="tx-section">
+    <div class="section-label">Completed ({{ filteredTransactions.length }})</div>
+    <div *ngFor="let transaction of filteredTransactions; let i = index">
       <div class="tx-card"
            [style.animation-delay]="(i * 0.04) + 's'"
            (click)="toggleExpand(transaction.id)">
@@ -101,7 +128,9 @@
             </thead>
             <tbody>
               <tr *ngFor="let item of transaction.items">
-                <td>{{ item.productName }}</td>
+                <td>{{ item.productName }}
+                  <span *ngIf="item.category" class="item-cat-badge">{{ item.category }}</span>
+                </td>
                 <td>{{ item.quantity }}</td>
                 <td>₹{{ item.price | number:'1.2-2' }}</td>
                 <td>₹{{ (item.price * item.quantity) | number:'1.2-2' }}</td>

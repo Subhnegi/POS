@@ -1,6 +1,7 @@
 export interface TransactionItem {
   productId: string;
   productName: string;
+  category: string;
   quantity: number;
   price: number;
   costPrice: number;

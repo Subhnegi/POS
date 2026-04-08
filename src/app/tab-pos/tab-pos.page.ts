@@ -22,6 +22,10 @@ export class TabPosPage implements OnInit, OnDestroy {
   filteredProducts: Product[] = [];
   cartItems: CartItem[] = [];
   searchTerm = '';
+  selectedCategory = '';
+  categories: string[] = [];
+  stockFilter: 'all' | 'in-stock' | 'low' = 'all';
+  sortBy: 'name' | 'price-asc' | 'price-desc' = 'name';
   isLoading = true;
   isOnline = true;
 
@@ -78,6 +82,7 @@ export class TabPosPage implements OnInit, OnDestroy {
 
     this.productsSub = this.productService.getProducts().subscribe(products => {
       this.products = products;
+      this.categories = [...new Set(products.map(p => p.category).filter(c => c))];
       this.filterProducts();
       this.isLoading = false;
       this.offlineStorage.cacheProducts(products);
@@ -98,14 +103,40 @@ export class TabPosPage implements OnInit, OnDestroy {
   }
 
   filterProducts(): void {
-    if (!this.searchTerm.trim()) {
-      this.filteredProducts = [...this.products];
-    } else {
-      const term = this.searchTerm.toLowerCase();
-      this.filteredProducts = this.products.filter(p =>
-        p.name.toLowerCase().includes(term)
-      );
+    let result = [...this.products];
+    if (this.selectedCategory) {
+      result = result.filter(p => p.category === this.selectedCategory);
     }
+    if (this.stockFilter === 'in-stock') {
+      result = result.filter(p => p.stock > 0);
+    } else if (this.stockFilter === 'low') {
+      result = result.filter(p => p.stock > 0 && p.stock <= 5);
+    }
+    if (this.searchTerm.trim()) {
+      const term = this.searchTerm.toLowerCase();
+      result = result.filter(p => p.name.toLowerCase().includes(term));
+    }
+    switch (this.sortBy) {
+      case 'price-asc': result.sort((a, b) => a.sellingPrice - b.sellingPrice); break;
+      case 'price-desc': result.sort((a, b) => b.sellingPrice - a.sellingPrice); break;
+      default: result.sort((a, b) => a.name.localeCompare(b.name)); break;
+    }
+    this.filteredProducts = result;
+  }
+
+  setCategory(cat: string): void {
+    this.selectedCategory = this.selectedCategory === cat ? '' : cat;
+    this.filterProducts();
+  }
+
+  setStockFilter(f: 'all' | 'in-stock' | 'low'): void {
+    this.stockFilter = f;
+    this.filterProducts();
+  }
+
+  setSortBy(s: 'name' | 'price-asc' | 'price-desc'): void {
+    this.sortBy = s;
+    this.filterProducts();
   }
 
   // ── Cart Operations ──
@@ -189,6 +220,48 @@ export class TabPosPage implements OnInit, OnDestroy {
     }
   }
 
+  // ── Touch Drag & Drop (Mobile) ──
+  private touchStartY = 0;
+  private touchMoved = false;
+
+  onTouchStart(event: TouchEvent, product: Product): void {
+    if (product.stock <= 0) return;
+    this.draggedProduct = product;
+    this.touchStartY = event.touches[0].clientY;
+    this.touchMoved = false;
+  }
+
+  onTouchMove(event: TouchEvent): void {
+    if (!this.draggedProduct) return;
+    const deltaY = Math.abs(event.touches[0].clientY - this.touchStartY);
+    if (deltaY > 10) {
+      this.touchMoved = true;
+      this.isDragging = true;
+      // Check if touch is over the cart area
+      const touch = event.touches[0];
+      const cartEl = document.querySelector('.pos-right');
+      if (cartEl) {
+        const rect = cartEl.getBoundingClientRect();
+        this.isDragOverCart = touch.clientX >= rect.left && touch.clientX <= rect.right &&
+                              touch.clientY >= rect.top && touch.clientY <= rect.bottom;
+      }
+    }
+  }
+
+  onTouchEnd(event: TouchEvent): void {
+    if (this.isDragOverCart && this.draggedProduct) {
+      this.addToCart(this.draggedProduct);
+    }
+    this.isDragging = false;
+    this.isDragOverCart = false;
+    this.draggedProduct = null;
+    // Prevent click if we dragged
+    if (this.touchMoved) {
+      event.preventDefault();
+    }
+    this.touchMoved = false;
+  }
+
   // ── Checkout ──
 
   openCheckout(): void {
@@ -252,6 +325,7 @@ export class TabPosPage implements OnInit, OnDestroy {
           items: this.cartItems.map(item => ({
             productId: item.product.id,
             productName: item.product.name,
+            category: item.product.category || '',
             quantity: item.quantity,
             price: item.product.sellingPrice,
             costPrice: item.product.costPrice

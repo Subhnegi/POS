@@ -12,9 +12,15 @@ import { Transaction } from '../models/transaction.model';
 })
 export class TabTransactionsPage implements OnInit, OnDestroy {
   transactions: Transaction[] = [];
+  filteredTransactions: Transaction[] = [];
   pendingTransactions: Transaction[] = [];
   isLoading = true;
   expandedId: string | null = null;
+
+  // Filters
+  searchTerm = '';
+  filterPayment = '';
+  filterDateRange: 'all' | 'today' | 'week' | 'month' = 'all';
 
   private transactionsSub?: Subscription;
 
@@ -26,10 +32,44 @@ export class TabTransactionsPage implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.transactionsSub = this.transactionService.getTransactions().subscribe(transactions => {
       this.transactions = transactions;
+      this.applyFilters();
       this.isLoading = false;
     });
 
     this.loadPendingTransactions();
+  }
+
+  applyFilters(): void {
+    let result = [...this.transactions];
+
+    // Date range filter
+    if (this.filterDateRange !== 'all') {
+      const now = Date.now();
+      let cutoff = 0;
+      switch (this.filterDateRange) {
+        case 'today': cutoff = now - 24 * 60 * 60 * 1000; break;
+        case 'week': cutoff = now - 7 * 24 * 60 * 60 * 1000; break;
+        case 'month': cutoff = now - 30 * 24 * 60 * 60 * 1000; break;
+      }
+      result = result.filter(t => t.createdAt >= cutoff);
+    }
+
+    // Payment method filter
+    if (this.filterPayment) {
+      result = result.filter(t => t.paymentMethod === this.filterPayment);
+    }
+
+    // Search filter
+    if (this.searchTerm.trim()) {
+      const term = this.searchTerm.toLowerCase();
+      result = result.filter(t =>
+        t.customerName?.toLowerCase().includes(term) ||
+        t.id.toLowerCase().includes(term) ||
+        t.items.some(i => i.productName.toLowerCase().includes(term))
+      );
+    }
+
+    this.filteredTransactions = result;
   }
 
   async loadPendingTransactions(): Promise<void> {

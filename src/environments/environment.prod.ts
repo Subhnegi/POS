@@ -1,5 +1,7 @@
 export const environment = {
   production: true,
+  appVersion: '__APP_VERSION__',
+  githubRepo: 'Subhnegi/POS',
   firebase: {
     apiKey: "__FIREBASE_API_KEY__",
     authDomain: "__FIREBASE_AUTH_DOMAIN__",

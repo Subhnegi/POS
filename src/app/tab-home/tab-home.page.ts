@@ -23,6 +23,10 @@ export class TabHomePage implements OnInit, OnDestroy {
   totalStock = 0;
   totalTransactions = 0;
   todayRevenue = 0;
+  todayOrders = 0;
+  avgOrderValue = 0;
+  todayProfit = 0;
+  topSellingProduct = '';
   pendingTransactionsCount = 0;
   lowStockProducts: Product[] = [];
   currentTime = '';
@@ -65,13 +69,29 @@ export class TabHomePage implements OnInit, OnDestroy {
 
     this.transactionsSub = this.transactionService.getTransactions().subscribe(transactions => {
       this.totalTransactions = transactions.length;
-      // Today's revenue
+      // Today's stats
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       const todayStart = today.getTime();
-      this.todayRevenue = transactions
-        .filter(t => t.createdAt >= todayStart && t.status === 'synced')
-        .reduce((sum, t) => sum + t.total, 0);
+      const todayTxs = transactions.filter(t => t.createdAt >= todayStart && t.status === 'synced');
+      this.todayRevenue = todayTxs.reduce((sum, t) => sum + t.total, 0);
+      this.todayOrders = todayTxs.length;
+      this.avgOrderValue = this.todayOrders > 0 ? this.todayRevenue / this.todayOrders : 0;
+      this.todayProfit = todayTxs.reduce((sum, t) => {
+        const cost = t.items.reduce((s, item) => s + (item.costPrice || 0) * item.quantity, 0);
+        return sum + (t.total - cost);
+      }, 0);
+
+      // Top selling product
+      const productSales = new Map<string, number>();
+      todayTxs.forEach(t => t.items.forEach(i => {
+        productSales.set(i.productName, (productSales.get(i.productName) || 0) + i.quantity);
+      }));
+      let maxSales = 0;
+      this.topSellingProduct = '-';
+      productSales.forEach((qty, name) => {
+        if (qty > maxSales) { maxSales = qty; this.topSellingProduct = name; }
+      });
     });
 
     this.loadPendingCount();
