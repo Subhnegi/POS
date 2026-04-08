@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { AlertController } from '@ionic/angular';
 import { Capacitor } from '@capacitor/core';
+import { Browser } from '@capacitor/browser';
 import { environment } from '../../environments/environment';
 
 interface GitHubRelease {
@@ -85,7 +86,7 @@ export class UpdateService {
         {
           text: 'Update Now',
           handler: () => {
-            window.open(downloadUrl, '_system');
+            Browser.open({ url: downloadUrl });
           }
         }
       ]
