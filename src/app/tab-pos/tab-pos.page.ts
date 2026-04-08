@@ -4,12 +4,14 @@ import { Subscription } from 'rxjs';
 import { ProductService } from '../services/product.service';
 import { CartService } from '../services/cart.service';
 import { TransactionService } from '../services/transaction.service';
+import { CustomerService } from '../services/customer.service';
 import { NetworkService } from '../services/network.service';
 import { OfflineStorageService } from '../services/offline-storage.service';
 import { CounterService } from '../services/counter.service';
 import { Product } from '../models/product.model';
 import { CartItem } from '../models/cart-item.model';
 import { Transaction } from '../models/transaction.model';
+import { Customer } from '../models/customer.model';
 
 @Component({
   selector: 'app-tab-pos',
@@ -43,6 +45,13 @@ export class TabPosPage implements OnInit, OnDestroy {
   checkoutDiscount = 0;
   checkoutGrandTotal = 0;
 
+  // Customer selection
+  customers: Customer[] = [];
+  filteredCustomers: Customer[] = [];
+  selectedCustomer: Customer | null = null;
+  customerSearchTerm = '';
+  showCustomerDropdown = false;
+
   checkoutData = {
     customerName: '',
     customerPhone: '',
@@ -60,11 +69,13 @@ export class TabPosPage implements OnInit, OnDestroy {
   private productsSub?: Subscription;
   private cartSub?: Subscription;
   private networkSub?: Subscription;
+  private customersSub?: Subscription;
 
   constructor(
     private productService: ProductService,
     private cartService: CartService,
     private transactionService: TransactionService,
+    private customerService: CustomerService,
     private networkService: NetworkService,
     private offlineStorage: OfflineStorageService,
     private counterService: CounterService,
@@ -90,6 +101,10 @@ export class TabPosPage implements OnInit, OnDestroy {
 
     this.cartSub = this.cartService.cartItems$.subscribe(items => {
       this.cartItems = items;
+    });
+
+    this.customersSub = this.customerService.getCustomers().subscribe(customers => {
+      this.customers = customers;
     });
   }
 
@@ -262,6 +277,35 @@ export class TabPosPage implements OnInit, OnDestroy {
     this.touchMoved = false;
   }
 
+  // ── Customer Selection ──
+
+  searchCustomers(): void {
+    const term = this.customerSearchTerm.toLowerCase().trim();
+    if (!term) {
+      this.filteredCustomers = [];
+      this.showCustomerDropdown = false;
+      return;
+    }
+    this.filteredCustomers = this.customers.filter(c =>
+      c.name.toLowerCase().includes(term) || c.phone.includes(term)
+    ).slice(0, 5);
+    this.showCustomerDropdown = this.filteredCustomers.length > 0;
+  }
+
+  selectCustomer(customer: Customer): void {
+    this.selectedCustomer = customer;
+    this.checkoutData.customerName = customer.name;
+    this.checkoutData.customerPhone = customer.phone;
+    this.customerSearchTerm = '';
+    this.showCustomerDropdown = false;
+  }
+
+  clearSelectedCustomer(): void {
+    this.selectedCustomer = null;
+    this.checkoutData.customerName = '';
+    this.checkoutData.customerPhone = '';
+  }
+
   // ── Checkout ──
 
   openCheckout(): void {
@@ -276,6 +320,9 @@ export class TabPosPage implements OnInit, OnDestroy {
       discountPercent: 0,
       paymentMethod: 'cash'
     };
+    this.selectedCustomer = null;
+    this.customerSearchTerm = '';
+    this.showCustomerDropdown = false;
     this.recalcCheckout();
     this.showCheckoutModal = true;
   }
@@ -380,5 +427,6 @@ export class TabPosPage implements OnInit, OnDestroy {
     this.productsSub?.unsubscribe();
     this.cartSub?.unsubscribe();
     this.networkSub?.unsubscribe();
+    this.customersSub?.unsubscribe();
   }
 }

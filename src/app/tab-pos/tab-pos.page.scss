@@ -771,6 +771,130 @@
   justify-content: center;
 }
 
+// ═══ Customer Search in Checkout ═══
+.customer-search-wrap {
+  position: relative;
+  margin-bottom: 12px;
+}
+
+.customer-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0; right: 0;
+  z-index: 20;
+  background: var(--pos-bg-raised);
+  border: 1px solid var(--pos-border);
+  border-radius: var(--radius-md);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.customer-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  &:hover { background: var(--pos-bg-hover); }
+  &:not(:last-child) { border-bottom: 1px solid var(--pos-border); }
+}
+
+.customer-avatar {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: var(--pos-amber-glow);
+  color: var(--pos-amber);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 14px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  &.selected {
+    width: 36px; height: 36px;
+    font-size: 16px;
+    background: var(--pos-emerald-glow);
+    color: var(--pos-emerald);
+  }
+}
+
+.customer-dropdown-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.customer-dropdown-name {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--pos-text-primary);
+}
+
+.customer-dropdown-phone {
+  font-size: 11px;
+  color: var(--pos-text-muted);
+}
+
+.selected-customer-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: var(--pos-emerald-glow);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  border-radius: var(--radius-md);
+  margin-bottom: 16px;
+}
+
+.selected-customer-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.selected-customer-name {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--pos-text-primary);
+}
+
+.selected-customer-phone {
+  font-size: 12px;
+  color: var(--pos-text-muted);
+}
+
+.chip-remove {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  border: 1px solid var(--pos-border);
+  background: var(--pos-bg-card);
+  color: var(--pos-text-muted);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  ion-icon { font-size: 14px; }
+  &:hover { color: var(--pos-rose); background: var(--pos-rose-glow); }
+}
+
+.or-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 12px 0;
+  color: var(--pos-text-muted);
+  font-size: 11px;
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  &::before, &::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--pos-border);
+  }
+}
+
 // ═══ Mobile: stack vertically ═══
 @media (max-width: 640px) {
   .pos-split { flex-direction: column; }

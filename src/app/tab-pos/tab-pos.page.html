@@ -202,7 +202,44 @@
 
         <!-- Customer Info -->
         <div class="section-label">Customer Details <small>(optional)</small></div>
-        <div class="form-fields">
+
+        <!-- Customer Search -->
+        <div class="customer-search-wrap" *ngIf="!selectedCustomer">
+          <div class="field-group">
+            <label>Search Existing Customer</label>
+            <input type="text" [(ngModel)]="customerSearchTerm"
+                   (input)="searchCustomers()"
+                   placeholder="Search by name or phone..."
+                   autocomplete="off" />
+          </div>
+          <div class="customer-dropdown" *ngIf="showCustomerDropdown">
+            <div *ngFor="let c of filteredCustomers"
+                 class="customer-dropdown-item"
+                 (click)="selectCustomer(c)">
+              <div class="customer-avatar">{{ c.name.charAt(0) }}</div>
+              <div class="customer-dropdown-info">
+                <span class="customer-dropdown-name">{{ c.name }}</span>
+                <span class="customer-dropdown-phone">{{ c.phone }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Selected Customer Chip -->
+        <div class="selected-customer-chip" *ngIf="selectedCustomer">
+          <div class="customer-avatar selected">{{ selectedCustomer.name.charAt(0) }}</div>
+          <div class="selected-customer-info">
+            <span class="selected-customer-name">{{ selectedCustomer.name }}</span>
+            <span class="selected-customer-phone">{{ selectedCustomer.phone }}</span>
+          </div>
+          <button class="chip-remove" (click)="clearSelectedCustomer()">
+            <ion-icon name="close"></ion-icon>
+          </button>
+        </div>
+
+        <div class="or-divider" *ngIf="!selectedCustomer"><span>or enter manually</span></div>
+
+        <div class="form-fields" *ngIf="!selectedCustomer">
           <div class="field-group">
             <label>Name</label>
             <input type="text" [(ngModel)]="checkoutData.customerName" placeholder="Walk-in Customer" />
