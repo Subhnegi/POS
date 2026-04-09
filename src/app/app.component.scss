@@ -74,9 +74,13 @@ ion-menu {
     ion-icon { color: var(--pos-sky) !important; }
   }
 
+  .sidebar-footer-wrap {
+    --background: var(--pos-bg-deep);
+    --border-color: var(--pos-border);
+  }
+
   .sidebar-footer {
     padding: 12px 20px;
-    border-top: 1px solid var(--pos-border);
     text-align: center;
   }
 

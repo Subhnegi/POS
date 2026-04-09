@@ -57,10 +57,23 @@ export class UpdateService {
 
       const latestTag = release.tag_name;
 
-      // Same version — no update
-      if (latestTag === this.appVersion) {
-        if (manual) await this.showToast('You are on the latest version!');
-        return;
+      // Compare semantic versions (strip v prefix and -commitHash suffix)
+      const currentSemver = this.extractSemver(this.appVersion);
+      const latestSemver = this.extractSemver(latestTag);
+
+      // If we can't parse either, fall back to string equality
+      if (!currentSemver || !latestSemver) {
+        if (latestTag === this.appVersion) {
+          if (manual) await this.showToast('You are on the latest version!');
+          return;
+        }
+      } else {
+        const cmp = this.compareSemver(currentSemver, latestSemver);
+        // cmp >= 0 means current is same or newer — no update needed
+        if (cmp >= 0) {
+          if (manual) await this.showToast('You are on the latest version!');
+          return;
+        }
       }
 
       // Auto-check respects skip; manual does not
@@ -129,6 +142,21 @@ export class UpdateService {
       color: 'medium'
     });
     await toast.present();
+  }
+
+  /** Extract [major, minor, patch] from tags like "v1.0.3-abc1234" or "1.0.3" */
+  private extractSemver(tag: string): number[] | null {
+    const m = tag.match(/v?(\d+)\.(\d+)\.(\d+)/);
+    if (!m) return null;
+    return [parseInt(m[1], 10), parseInt(m[2], 10), parseInt(m[3], 10)];
+  }
+
+  /** Returns negative if a < b, 0 if equal, positive if a > b */
+  private compareSemver(a: number[], b: number[]): number {
+    for (let i = 0; i < 3; i++) {
+      if (a[i] !== b[i]) return a[i] - b[i];
+    }
+    return 0;
   }
 
   private truncate(text: string, max: number): string {
