@@ -68,4 +68,23 @@ ion-menu {
     background: var(--pos-border);
     margin: 12px 16px;
   }
+
+  .update-item {
+    --color: var(--pos-sky);
+    ion-icon { color: var(--pos-sky) !important; }
+  }
+
+  .sidebar-footer {
+    padding: 12px 20px;
+    border-top: 1px solid var(--pos-border);
+    text-align: center;
+  }
+
+  .version-label {
+    font-family: var(--font-display);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--pos-text-muted);
+    letter-spacing: 0.5px;
+  }
 }

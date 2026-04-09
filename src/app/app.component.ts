@@ -8,7 +8,7 @@ import { UpdateService } from './services/update.service';
   standalone: false,
 })
 export class AppComponent implements OnInit {
-  constructor(private updateService: UpdateService) {}
+  constructor(public updateService: UpdateService) {}
 
   ngOnInit(): void {
     this.updateService.checkForUpdate();

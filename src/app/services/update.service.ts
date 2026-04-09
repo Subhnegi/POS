@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { AlertController } from '@ionic/angular';
+import { AlertController, ToastController } from '@ionic/angular';
 import { Capacitor } from '@capacitor/core';
 import { Browser } from '@capacitor/browser';
 import { environment } from '../../environments/environment';
@@ -18,33 +18,56 @@ export class UpdateService {
   private readonly CHECK_INTERVAL = 4 * 60 * 60 * 1000; // 4 hours
   private readonly LAST_CHECK_KEY = 'pos_last_update_check';
 
-  constructor(private alertController: AlertController) {}
+  readonly appVersion = environment.appVersion;
 
+  constructor(
+    private alertController: AlertController,
+    private toastController: ToastController
+  ) {}
+
+  /** Auto-check on startup (throttled, respects skip) */
   async checkForUpdate(): Promise<void> {
-    // Only check on native platforms (Android/iOS), not web
-    if (!Capacitor.isNativePlatform()) return;
-
     // Skip if the version placeholder wasn't replaced (local dev)
-    if (environment.appVersion.startsWith('__')) return;
+    if (this.appVersion.startsWith('__')) return;
 
     // Throttle checks
     const lastCheck = parseInt(localStorage.getItem(this.LAST_CHECK_KEY) || '0', 10);
     if (Date.now() - lastCheck < this.CHECK_INTERVAL) return;
     localStorage.setItem(this.LAST_CHECK_KEY, Date.now().toString());
 
+    await this.doCheck(false);
+  }
+
+  /** Manual check from sidebar button (no throttle, ignores skip) */
+  async checkForUpdateManual(): Promise<void> {
+    if (this.appVersion.startsWith('__')) {
+      await this.showToast('Version not set — running in dev mode');
+      return;
+    }
+    await this.doCheck(true);
+  }
+
+  private async doCheck(manual: boolean): Promise<void> {
     try {
       const release = await this.fetchLatestRelease();
-      if (!release) return;
+      if (!release) {
+        if (manual) await this.showToast('Could not reach GitHub. Check your connection.');
+        return;
+      }
 
       const latestTag = release.tag_name;
-      const currentVersion = environment.appVersion;
 
       // Same version — no update
-      if (latestTag === currentVersion) return;
+      if (latestTag === this.appVersion) {
+        if (manual) await this.showToast('You are on the latest version!');
+        return;
+      }
 
-      // User previously skipped this exact version
-      const skipped = localStorage.getItem(this.SKIP_KEY);
-      if (skipped === latestTag) return;
+      // Auto-check respects skip; manual does not
+      if (!manual) {
+        const skipped = localStorage.getItem(this.SKIP_KEY);
+        if (skipped === latestTag) return;
+      }
 
       // Find APK asset
       const apkAsset = release.assets.find(a => a.name.endsWith('.apk'));
@@ -52,7 +75,7 @@ export class UpdateService {
 
       await this.showUpdatePrompt(latestTag, release.body || '', downloadUrl);
     } catch {
-      // Silently fail — update check is non-critical
+      if (manual) await this.showToast('Update check failed. Try again later.');
     }
   }
 
@@ -86,12 +109,26 @@ export class UpdateService {
         {
           text: 'Update Now',
           handler: () => {
-            Browser.open({ url: downloadUrl });
+            if (Capacitor.isNativePlatform()) {
+              Browser.open({ url: downloadUrl });
+            } else {
+              window.open(downloadUrl, '_blank');
+            }
           }
         }
       ]
     });
     await alert.present();
+  }
+
+  private async showToast(message: string): Promise<void> {
+    const toast = await this.toastController.create({
+      message,
+      duration: 2500,
+      position: 'top',
+      color: 'medium'
+    });
+    await toast.present();
   }
 
   private truncate(text: string, max: number): string {
